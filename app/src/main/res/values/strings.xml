@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Gym App IA</string>
+    <string name="first_time_welcome">Welccome! Are you ready to get started?</string>
+    <string name="welcome_return">Good %1$s %2$S!</string>
+    <string name="ready">Begin</string>
+    <string name="quiz">Getting to know you</string>
+    <string name="back_button_content_desc">Go back</string>
+    <string name="next_button">Next!</string>
+    <string name="kilograms">kilograms</string>
+</resources>
