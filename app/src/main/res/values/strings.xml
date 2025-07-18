@@ -7,4 +7,6 @@
     <string name="back_button_content_desc">Go back</string>
     <string name="next_button">Next!</string>
     <string name="kilograms">kilograms</string>
+    <string name = "female">Female</string>
+    <string name = "male">Male</string>
 </resources>

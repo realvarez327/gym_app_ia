@@ -19,7 +19,8 @@ import com.example.gymappia.R
 
 @Composable
 fun LandingScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNextButtonClicked:()->Unit
 ){
     Column (
         modifier = modifier.fillMaxSize(),
@@ -36,7 +37,7 @@ fun LandingScreen(
             contentDescription = "jim"
         )
         Button(
-            onClick = {},
+            onClick = onNextButtonClicked,
             modifier = modifier,
             shape = RoundedCornerShape(50.dp)
         ) {
