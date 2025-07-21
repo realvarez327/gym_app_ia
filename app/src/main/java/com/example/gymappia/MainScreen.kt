@@ -2,13 +2,15 @@ package com.example.gymappia
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,22 +39,19 @@ fun TopBar(
     modifier: Modifier = Modifier,
     @StringRes currentScreenTitle: Int,
     canGoBack: Boolean,
-    goBack: () -> Boolean
+    goBack: () -> Unit
 ) {
     CenterAlignedTopAppBar(
-        title = {
-            Text(
-                text = stringResource(currentScreenTitle)
-            )
-
-        },
+        title = { Text(stringResource(currentScreenTitle)) },
         modifier = modifier,
         navigationIcon = {
             if (canGoBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back_button_content_desc)
-                )
+                IconButton(onClick = goBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = stringResource(R.string.back_button_content_desc)
+                    )
+                }
             }
         }
     )
@@ -65,7 +64,6 @@ fun GymApp() {
     val currentScreen = AppScreen.valueOf(
         backStackEntry?.destination?.route ?: AppScreen.Start.name
     )
-    val userInitViewModel: UserInitViewModel = viewModel()
 
     Scaffold(
         topBar = {
@@ -85,18 +83,17 @@ fun GymApp() {
             composable(route = AppScreen.Start.name) {
                 LandingScreen(
                     modifier = Modifier
-                        .fillMaxSize()
                         .background(color = colorScheme.background),
                     onNextButtonClicked = { navController.navigate(AppScreen.Quiz.name) }
                 )
             }
 
             composable(route = AppScreen.Quiz.name) {
+                val userInitViewModel: UserInitViewModel = viewModel()
                 QuizScreen(
                     modifier = Modifier
-                        .fillMaxSize()
                         .background(color = colorScheme.background),
-                    questions = QuestionsDataSource.userStartQuestions
+                    userInitViewModel = userInitViewModel
                 )
             }
         }

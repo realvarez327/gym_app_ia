@@ -3,21 +3,21 @@ package com.example.gymappia.data
 import com.example.gymappia.model.FitnessGoal
 import com.example.gymappia.model.NumberQuestionSubject
 import com.example.gymappia.model.Question
-import com.example.gymappia.model.QuestionType
+import com.example.gymappia.model.SingleChoiceQuestionSubject
 
 object QuestionsDataSource {
-    val userStartQuestions = listOf<Question>(
+    val userStartQuestions = listOf(
         Question.StringResponseQuestion(
             questionText = "Hello! What is your name?"
             ),
         Question.MultiChooseQuestion(
             questionText = "Nice to meet you! What are your fitness goals?",
-            possibleAnswerChoices = listOf(
-                FitnessGoal.LosingWeight.name,
-                FitnessGoal.GainingWeight.name,
-                FitnessGoal.GainingMuscle.name,
-                FitnessGoal.KeepWeight.name,
-                FitnessGoal.LoseFat.name
+            possibleGoalChoices = listOf(
+                FitnessGoal.LosingWeight,
+                FitnessGoal.GainingWeight,
+                FitnessGoal.GainingMuscle,
+                FitnessGoal.KeepWeight,
+                FitnessGoal.LoseFat
             )
         ),//remember to make it so that if you choose lose weight, you cant also choose gain weight.. somehow
         //make a choice class?
@@ -26,7 +26,8 @@ object QuestionsDataSource {
             possibleAnswerChoices = listOf(
                 "Female",
                 "Male"
-            )
+            ),
+            singleChooseSubject = SingleChoiceQuestionSubject.Gender
         ),
         Question.NumberResponseQuestion(
             questionText = "Okay then! Now, how much do you weigh (in kilograms) ?",
