@@ -26,11 +26,13 @@ import com.example.gymappia.ui.LandingScreen
 import com.example.gymappia.ui.QuizScreen
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymappia.ui.DailyViewScreen
 import com.example.gymappia.ui.UserInitViewModel
 
 enum class AppScreen(@StringRes val id: Int) {
     Start(id = R.string.app_name),
-    Quiz(id = R.string.quiz)
+    Quiz(id = R.string.quiz),
+    DailyView(id = R.string.daily)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,6 +97,10 @@ fun GymApp() {
                         .background(color = colorScheme.background),
                     userInitViewModel = userInitViewModel
                 )
+            }
+
+            composable (route = AppScreen.DailyView.name){
+                DailyViewScreen()
             }
         }
 

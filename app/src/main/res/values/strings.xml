@@ -4,6 +4,7 @@
     <string name="welcome_return">Good %1$s %2$S!</string>
     <string name="ready">Begin</string>
     <string name="quiz">Getting to know you</string>
+    <string name="daily">Daily View</string>
     <string name="back_button_content_desc">Go back</string>
     <string name="next_button">Next!</string>
     <string name="kilograms">kilograms</string>
@@ -13,4 +14,5 @@
     <string name="years_old">years old</string>
     <string name="basic_greeting">Hey! Ready to train?</string>
     <string name="error_msg_unexpected">Error: Something thats not supposed to be able to happen jus occurred. Please fix me!</string>
+    <string name="welcome_user_to_week">Welcome, %s !</string>
 </resources>

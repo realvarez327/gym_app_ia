@@ -5,18 +5,13 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,13 +46,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymappia.data.QuestionsDataSource
 import com.example.gymappia.model.FitnessGoal
 import com.example.gymappia.model.NumberQuestionSubject
+import com.example.gymappia.model.QuizHandler
 import com.example.gymappia.model.SingleChoiceQuestionSubject
 import com.example.gymappia.ui.theme.GymAppIATheme
 
 
 
-var currentIndex = 1
 
+val quizHandler: QuizHandler = QuizHandler()
 @Composable
 fun QuizScreen(
     modifier: Modifier = Modifier,
@@ -67,7 +63,7 @@ fun QuizScreen(
     val viewModel: UserInitViewModel = userInitViewModel
     //todo when i learn coroutines, add determinate linear progress indicator
 
-    var currQuestion: Question = questions[currentIndex]
+    var currQuestion: Question = questions[quizHandler.currentIndex]
     Column(modifier = modifier.fillMaxSize()) {
 
         when (currQuestion.type) {
@@ -246,7 +242,7 @@ fun GoalChoiceOptionBubble(
 ) {
     ChoiceBubble(
         onClick = onclick,
-        stringToShow = goal.string,//todo when it realizes that goal has a property string, use it instead
+        stringToShow = goal.name,//todo when it realizes that goal has a property message, use it instead
         modifier = modifier
     )
 }
@@ -254,9 +250,7 @@ fun GoalChoiceOptionBubble(
 
 @Composable
 fun QuestionTitle(question: Question, modifier: Modifier = Modifier){
-    Spacer(
-        modifier = Modifier.height(140.dp)
-    )
+
     Text(
         text = question.questionText,
         style = typography.headlineSmall,
@@ -321,27 +315,15 @@ QuestionTitle(question)
 }
 
 
-fun moveToNextQuestion(){
-
-        if(currentIndex+1>= QuestionsDataSource.userStartQuestions.size){
-            //too big
-            currentIndex = -1
-        }else{
-            currentIndex++
-        }
-
-        Log.d("nextQuiz", "Quiz handler moved to next question apparently")
-        Log.d("nextQuiz", "current question index, after increment : $currentIndex")
-
-
-}
-
 @Composable
 fun NextButton(alsoOnclick: () -> Unit, modifier: Modifier = Modifier) {
     Button(
         onClick = {
             Log.d("nextQuiz", "Next button was clicked")
-            moveToNextQuestion()
+            quizHandler.nextQuestion()
+            if(quizHandler.currentIndex==-1) {
+                //todo end quiz
+            }
             alsoOnclick()
             Log.d("nextQuiz", "also on click executed")
         },

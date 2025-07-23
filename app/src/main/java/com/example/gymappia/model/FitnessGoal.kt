@@ -1,6 +1,6 @@
 package com.example.gymappia.model
 
-enum class FitnessGoal (string:String){
+enum class FitnessGoal (message:String){
     LosingWeight("Lose Weight"),
     GainingWeight("Gain Weight"),
     GainingMuscle("Gain Muscle"),
