@@ -13,6 +13,9 @@
     <string name= "centimeters">centimeters</string>
     <string name="years_old">years old</string>
     <string name="basic_greeting">Hey! Ready to train?</string>
-    <string name="error_msg_unexpected">Error: Something thats not supposed to be able to happen jus occurred. Please fix me!</string>
+    <string name="error_msg_unexpected">Error: Something that\'s not supposed to be able to happen jus occurred. Please fix me!</string>
     <string name="welcome_user_to_week">Welcome, %s !</string>
+    <string name="add_food_tab_name">Food</string>
+    <string name="add_workout_tab_name">Workouts</string>
+
 </resources>

@@ -57,13 +57,14 @@ val quizHandler: QuizHandler = QuizHandler()
 @Composable
 fun QuizScreen(
     modifier: Modifier = Modifier,
-    userInitViewModel: UserInitViewModel
+    userInitViewModel: UserInitViewModel,
+    toEndQuiz: () -> Unit
 ) {
     val questions = QuestionsDataSource.userStartQuestions
     val viewModel: UserInitViewModel = userInitViewModel
     //todo when i learn coroutines, add determinate linear progress indicator
-
-    var currQuestion: Question = questions[quizHandler.currentIndex]
+    val currIndex: Int = quizHandler.currentIndex.value
+    var currQuestion: Question = questions[currIndex]
     Column(modifier = modifier.fillMaxSize()) {
 
         when (currQuestion.type) {
@@ -71,7 +72,8 @@ fun QuizScreen(
                 MultipleChoiceScreen(
                     question = currQuestion as Question.MultiChooseQuestion,
                     modifier = modifier,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    doIfLast = {toEndQuiz()}
                 )
             }
 
@@ -83,21 +85,24 @@ fun QuizScreen(
                     NumberQuestionSubject.Weight -> R.string.kilograms
                     NumberQuestionSubject.Height -> R.string.centimeters
                     NumberQuestionSubject.Age -> R.string.years_old
-               }
+               },
+                doIfLast = {toEndQuiz()}
             )
 
             QuestionType.SingleChoice -> {
                 SingleChoiceSection(
                     question = currQuestion as Question.SingleChooseQuestion,
                     modifier = modifier,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    doIfLast = {toEndQuiz()}
                 )
             }
 
             QuestionType.StringResponse -> StringResponseSection(
                 question = currQuestion as Question.StringResponseQuestion,
                 modifier = modifier,
-                viewModel = viewModel
+                viewModel = viewModel,
+                doIfLast = {toEndQuiz()}
             )
         }
     }
@@ -108,11 +113,15 @@ fun QuizScreen(
 fun StringResponseSection(
     modifier: Modifier = Modifier,
     question: Question.StringResponseQuestion,
-    viewModel: UserInitViewModel
+    viewModel: UserInitViewModel,
+    doIfLast:()-> Unit?
 ) {
     var value by rememberSaveable { mutableStateOf("") }
     Column (
-        modifier = modifier.fillMaxSize().background(color = colorScheme.background).padding(16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .background(color = colorScheme.background)
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
     ){
@@ -130,7 +139,12 @@ fun StringResponseSection(
             shape = MaterialTheme.shapes.medium
         )
 
-        NextButton(alsoOnclick = { viewModel.updateUserName(value) })
+        NextButton(alsoOnclick = {
+            viewModel.updateUserName(value)
+            if(quizHandler.onLastQuestion()){
+                doIfLast()
+            }
+        })
     }
 
 }
@@ -139,7 +153,8 @@ fun StringResponseSection(
 fun SingleChoiceSection(
     modifier: Modifier = Modifier,
     question: Question.SingleChooseQuestion,
-    viewModel: UserInitViewModel
+    viewModel: UserInitViewModel,
+    doIfLast:()-> Unit?
 ) {
 
     QuestionTitle(question)
@@ -165,6 +180,9 @@ fun SingleChoiceSection(
         when (question.singleChooseSubject) {
             SingleChoiceQuestionSubject.Gender -> viewModel.updateUserGender(selectedOption)
         }
+        if(quizHandler.onLastQuestion()){
+            doIfLast()
+        }
     })
 }
 
@@ -174,7 +192,8 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
     question: Question.NumberResponseQuestion,
     viewModel: UserInitViewModel,
     @StringRes unitStringResource: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    doIfLast:()-> Unit?
 ) {
     var number by rememberSaveable { mutableIntStateOf(0) }
     Column(
@@ -209,6 +228,9 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
                     NumberQuestionSubject.Weight -> viewModel.updateUserWeight(number)
                     NumberQuestionSubject.Height -> viewModel.updateUserHeight(number)
                     NumberQuestionSubject.Age -> viewModel.updateUserAge(number)
+                }
+                if(quizHandler.onLastQuestion()){
+                    doIfLast()
                 }
             })
         }
@@ -262,14 +284,17 @@ fun QuestionTitle(question: Question, modifier: Modifier = Modifier){
 fun MultipleChoiceScreen(
     question: Question.MultiChooseQuestion,
     viewModel: UserInitViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    doIfLast:()-> Unit?
 ) {
 
     val goals: MutableList<FitnessGoal> = rememberSaveable { mutableListOf() }
     val possibleGoals: List<FitnessGoal>? = question.possibleGoalChoices
 
     Column (
-        modifier = modifier.fillMaxSize().padding(16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ){
@@ -281,7 +306,9 @@ QuestionTitle(question)
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            modifier = modifier.padding(8.dp).weight(1f),
+            modifier = modifier
+                .padding(8.dp)
+                .weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -307,6 +334,9 @@ QuestionTitle(question)
         NextButton(
             alsoOnclick = {
                 viewModel.updateUserGoals(goals)
+                if(quizHandler.onLastQuestion()){
+                    doIfLast()
+                }
             }
         )
     }
@@ -320,8 +350,8 @@ fun NextButton(alsoOnclick: () -> Unit, modifier: Modifier = Modifier) {
     Button(
         onClick = {
             Log.d("nextQuiz", "Next button was clicked")
-            quizHandler.nextQuestion()
-            if(quizHandler.currentIndex==-1) {
+
+            if(quizHandler.nextQuestion()==-1) {
                 //todo end quiz
             }
             alsoOnclick()
@@ -347,8 +377,9 @@ fun NextButton(alsoOnclick: () -> Unit, modifier: Modifier = Modifier) {
 fun QuizScreenPreview() {
     GymAppIATheme {
         QuizScreen(
+            modifier = Modifier.fillMaxSize(),
             userInitViewModel = viewModel(),
-            modifier = Modifier.fillMaxSize()
+            toEndQuiz = {  },
         )
     }
 }

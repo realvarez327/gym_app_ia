@@ -1,19 +1,28 @@
 package com.example.gymappia.model
 
+import androidx.compose.runtime.mutableIntStateOf
 import com.example.gymappia.data.QuestionsDataSource
+import androidx.compose.runtime.State
 
-class QuizHandler(
-    var currentIndex: Int = 0,
+class QuizHandler{
+    private val _currentIndex = mutableIntStateOf(0)
+    val currentIndex: State<Int> get() = _currentIndex
     val quizLength: Int = QuestionsDataSource.userStartQuestions.size
-) {
-
-    fun nextQuestion(): Int {
-        if (currentIndex + 1 >= QuestionsDataSource.userStartQuestions.size) {
-            currentIndex = -1
-            return -1
+    fun nextQuestion():Int{
+        if(_currentIndex.intValue+1< quizLength){
+            //next question is in bounds
+            _currentIndex.intValue += 1
+            return 1
         }
-        currentIndex++
-        return currentIndex
+        return -1
+        //out of bounds, quiz end reached
+
+    }
+    fun onLastQuestion(): Boolean{
+        if(_currentIndex.intValue+1==quizLength){
+            return true
+        }
+        return false
     }
 
 }

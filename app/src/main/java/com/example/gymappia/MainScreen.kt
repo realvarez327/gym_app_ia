@@ -4,9 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -21,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.gymappia.data.QuestionsDataSource
 import com.example.gymappia.ui.LandingScreen
 import com.example.gymappia.ui.QuizScreen
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -95,7 +92,8 @@ fun GymApp() {
                 QuizScreen(
                     modifier = Modifier
                         .background(color = colorScheme.background),
-                    userInitViewModel = userInitViewModel
+                    userInitViewModel = userInitViewModel,
+                    toEndQuiz = {navController.navigate(AppScreen.DailyView.name)}
                 )
             }
 
