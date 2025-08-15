@@ -41,7 +41,7 @@ fun DailyViewScreen(modifier: Modifier = Modifier){
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
 
     Scaffold(modifier = modifier) { contentPadding ->
-        Column {
+        Column (modifier = modifier.fillMaxSize()){
             PrimaryTabRow(
                 selectedTabIndex = selectedDestination,
                 modifier = Modifier.padding(contentPadding)
@@ -96,7 +96,7 @@ fun FoodViewScreen(modifier: Modifier = Modifier){
     ) {
         Column (
             modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceEvenly
+            verticalArrangement = Arrangement.SpaceBetween
         ){
             Row {
                 Text(

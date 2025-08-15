@@ -3,6 +3,7 @@ package com.example.gymappia.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gymappia.R
@@ -67,7 +69,8 @@ fun DayPreview(modifier: Modifier = Modifier){
                     Color.Green,
                     Color.DarkGray,
                     Color.Black
-                )
+                ),
+                modifier = modifier.size(30.dp)
             )
         }
 

@@ -50,14 +50,15 @@ class ProgressGraphic {
     ) {
 
         with(drawScope){
-            translate(top = 0f, left = 0f) {
-                rotate(degrees = rotationAmount-90f) {
+            rotate(degrees = rotationAmount) {
+                translate(top = size.height / 2) {
                     val path = Path()
-                    path.moveTo(size.width / 4f, size.height / 20f)
-                    path.lineTo(size.width / 4f + size.width/8f, size.height / 20f + size.height/3f)
-                    path.lineTo(size.width / 4f , size.height * 0.45f)
-                    path.lineTo(size.width / 4f - size.width/8f, size.height / 20f + size.height/3f)
+                    path.moveTo(0.5F * size.width, y = 0f)
+                    path.lineTo(0.35F * size.width, 0.15F * size.height)
+                    path.lineTo(0.5F * size.width, 0.5F * size.height)
+                    path.lineTo(0.65F * size.width, 0.15F * size.height)
                     drawPath(path = path, color = color, alpha = 0.5f)
+
                 }
             }
         }
@@ -67,14 +68,14 @@ class ProgressGraphic {
     @Preview(showBackground = true)
     @Composable
     fun DrawPreview() {
-        Canvas(modifier = Modifier.size(300.dp)) {
-            drawSector(
-                drawScope = this,
-                color = Color.Red,
-                progressAmount = 3.0,
-                rotationAmount = 0f,
-            )
-        }
+//        Canvas(modifier = Modifier.size(300.dp)) {
+//            drawSector(
+//                drawScope = this,
+//                color = Color.Red,
+//                progressAmount = 3.0,
+//                rotationAmount = 0f,
+//            )
+//        }
 
         DrawProgressGraphic(
             goalColors = listOf(

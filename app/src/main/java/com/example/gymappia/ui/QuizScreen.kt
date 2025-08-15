@@ -60,11 +60,12 @@ fun QuizScreen(
     userInitViewModel: UserInitViewModel,
     toEndQuiz: () -> Unit
 ) {
+    quizHandler.endQuizFunction = toEndQuiz
     val questions = QuestionsDataSource.userStartQuestions
     val viewModel: UserInitViewModel = userInitViewModel
     //todo when i learn coroutines, add determinate linear progress indicator
     val currIndex: Int = quizHandler.currentIndex.value
-    var currQuestion: Question = questions[currIndex]
+    var currQuestion: Question = questions[currIndex]//todo check if this can be val
     Column(modifier = modifier.fillMaxSize()) {
 
         when (currQuestion.type) {
@@ -264,7 +265,7 @@ fun GoalChoiceOptionBubble(
 ) {
     ChoiceBubble(
         onClick = onclick,
-        stringToShow = goal.name,//todo when it realizes that goal has a property message, use it instead
+        stringToShow = goal.message,
         modifier = modifier
     )
 }
@@ -277,6 +278,7 @@ fun QuestionTitle(question: Question, modifier: Modifier = Modifier){
         text = question.questionText,
         style = typography.headlineSmall,
         textAlign = TextAlign.Center,
+        modifier = modifier
     )
 
 }
@@ -352,7 +354,7 @@ fun NextButton(alsoOnclick: () -> Unit, modifier: Modifier = Modifier) {
             Log.d("nextQuiz", "Next button was clicked")
 
             if(quizHandler.nextQuestion()==-1) {
-                //todo end quiz
+               quizHandler.endQuizFunction()
             }
             alsoOnclick()
             Log.d("nextQuiz", "also on click executed")

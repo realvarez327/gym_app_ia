@@ -8,6 +8,8 @@ class QuizHandler{
     private val _currentIndex = mutableIntStateOf(0)
     val currentIndex: State<Int> get() = _currentIndex
     val quizLength: Int = QuestionsDataSource.userStartQuestions.size
+    var endQuizFunction:()->Unit ={
+    }
     fun nextQuestion():Int{
         if(_currentIndex.intValue+1< quizLength){
             //next question is in bounds
