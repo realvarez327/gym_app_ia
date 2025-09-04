@@ -1,5 +1,7 @@
 package com.example.gymappia
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -25,11 +27,13 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymappia.ui.DailyViewScreen
 import com.example.gymappia.ui.UserInitViewModel
+import com.example.gymappia.ui.WeeklyViewScreen
 
 enum class AppScreen(@StringRes val id: Int) {
     Start(id = R.string.app_name),
     Quiz(id = R.string.quiz),
-    DailyView(id = R.string.daily)
+    DailyView(id = R.string.daily),
+    WeeklyView(id =R.string.add_food)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +60,7 @@ fun TopBar(
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun GymApp() {
     val navController = rememberNavController()
@@ -93,12 +98,18 @@ fun GymApp() {
                     modifier = Modifier
                         .background(color = colorScheme.background),
                     userInitViewModel = userInitViewModel,
-                    toEndQuiz = {navController.navigate(AppScreen.DailyView.name)}
+                    toEndQuiz = {navController.navigate(AppScreen.WeeklyView.name)}
                 )
             }
 
             composable (route = AppScreen.DailyView.name){
                 DailyViewScreen()
+            }
+
+            composable (route = AppScreen.WeeklyView.name){
+                WeeklyViewScreen(
+                    modifier = Modifier.background(color= colorScheme.background)
+                )
             }
         }
 

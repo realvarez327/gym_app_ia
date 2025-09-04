@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Gym App IA</string>
-    <string name="first_time_welcome">Welcome! \n Are you ready to get started?</string>
+    <string name="first_time_welcome">Welcome!\n Are you ready to get started?</string>
     <string name="welcome_return">Good %1$s %2$S!</string>
     <string name="ready">Begin</string>
     <string name="quiz">Getting to know you</string>
@@ -14,8 +14,9 @@
     <string name="years_old">years old</string>
     <string name="basic_greeting">Hey! Ready to train?</string>
     <string name="error_msg_unexpected">Error: Something that\'s not supposed to be able to happen jus occurred. Please fix me!</string>
-    <string name="welcome_user_to_week">Welcome, %s !</string>
-    <string name="add_food_tab_name">Food</string>
-    <string name="add_workout_tab_name">Workouts</string>
+    <string name="welcome_user_to_week">Welcome, %s!</string>
+    <string name="food_view">Food</string>
+    <string name="workout_view">Workouts</string>
+    <string name="add_food">Add Food</string>
 
 </resources>

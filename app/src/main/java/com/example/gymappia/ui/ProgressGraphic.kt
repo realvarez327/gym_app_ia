@@ -7,12 +7,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import android.content.res.Resources
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import kotlin.math.PI
+import kotlin.math.sin
+import kotlin.math.tan
 
 
 class ProgressGraphic {
@@ -24,14 +24,17 @@ class ProgressGraphic {
     ) {
         var degreeAmt = 0f
         Canvas(modifier = modifier.size(240.dp)) {
+            val halfTriangleCenterAngle: Float= (((2*PI)/goalColors.size)/2).toFloat()
             goalColors.forEach { color ->
+
                 //DrawSector(color = color, progressAmount = 2.0, rotationAmount = degreeAmt, canvasSize = 15f)
                 degreeAmt += 45f
                 drawSector(
                     drawScope =this,
-                    progressAmount = 3.0,
+                    progressAmount = 1f,
                     rotationAmount = degreeAmt,
-                    color = color
+                    color = color,
+                    triangleCenterAngleHalf = halfTriangleCenterAngle
                 )
 
             }
@@ -44,23 +47,25 @@ class ProgressGraphic {
 
     fun drawSector(
         color: Color,
-        progressAmount: Double,
+        progressAmount: Float,
         rotationAmount: Float = 0f,
-        drawScope: DrawScope
+        drawScope: DrawScope,
+        triangleCenterAngleHalf: Float
     ) {
 
         with(drawScope){
-            rotate(degrees = rotationAmount) {
-                translate(top = size.height / 2) {
-                    val path = Path()
-                    path.moveTo(0.5F * size.width, y = 0f)
-                    path.lineTo(0.35F * size.width, 0.15F * size.height)
-                    path.lineTo(0.5F * size.width, 0.5F * size.height)
-                    path.lineTo(0.65F * size.width, 0.15F * size.height)
-                    drawPath(path = path, color = color, alpha = 0.5f)
-
-                }
-            }
+           rotate(degrees = rotationAmount){
+               val path = Path()
+               val size = drawScope.size
+               val height =(size.width*0.5F)*progressAmount;
+               val distanceFromCenterLine = height* tan(triangleCenterAngleHalf)
+               path.moveTo(size.width*0.5f, size.height*0.5f)
+               path.lineTo(size.width*0.5f + height, ((size.height*0.5f)-distanceFromCenterLine))
+               path.lineTo(size.width*0.5f + height, ((size.height*0.5f)+distanceFromCenterLine))
+               path.lineTo(size.width*0.5f, size.height*0.5f)
+               path.close()
+               drawPath(path = path, color =color, alpha = 0.5f)
+           }
         }
 
     }
@@ -72,7 +77,7 @@ class ProgressGraphic {
 //            drawSector(
 //                drawScope = this,
 //                color = Color.Red,
-//                progressAmount = 3.0,
+//                progressAmount = 0.7f,
 //                rotationAmount = 0f,
 //            )
 //        }

@@ -5,43 +5,56 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.gymappia.R
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.gymappia.model.Food
+import com.example.gymappia.model.SampleUser
 
-enum class DayOverviewScreens(@StringRes val stringID:Int){
-    FoodView(R.string.add_food_tab_name),
-    WorkoutView(R.string.add_workout_tab_name)
+
+//todo placeholder code, change when user info is persistently stored
+val user: SampleUser = SampleUser()
+
+enum class DayOverviewScreens(@StringRes val stringID: Int) {
+    FoodView(R.string.food_view),
+    WorkoutView(R.string.workout_view)
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DailyViewScreen(modifier: Modifier = Modifier){
+fun DailyViewScreen(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    val startDestination= DayOverviewScreens.FoodView
+    val startDestination = DayOverviewScreens.FoodView
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
 
     Scaffold(modifier = modifier) { contentPadding ->
-        Column (modifier = modifier.fillMaxSize()){
+        Column(modifier = modifier.fillMaxSize()) {
             PrimaryTabRow(
                 selectedTabIndex = selectedDestination,
                 modifier = Modifier.padding(contentPadding)
@@ -67,19 +80,20 @@ fun DailyViewScreen(modifier: Modifier = Modifier){
         }
     }
 }
+
 @Composable
 fun DailyViewNavHost(
     navController: NavHostController,
     startDestination: DayOverviewScreens,
     modifier: Modifier = Modifier
-    ){
+) {
     NavHost(
         navController,
         startDestination = startDestination.name
-    ){
-        DayOverviewScreens.entries.forEach { destination->
-            composable(destination.name){
-                when(destination){
+    ) {
+        DayOverviewScreens.entries.forEach { destination ->
+            composable(destination.name) {
+                when (destination) {
                     DayOverviewScreens.FoodView -> FoodViewScreen(modifier)
                     DayOverviewScreens.WorkoutView -> WorkoutViewScreen(modifier)
                 }
@@ -90,19 +104,27 @@ fun DailyViewNavHost(
 
 
 @Composable
-fun FoodViewScreen(modifier: Modifier = Modifier){
+fun FoodViewScreen(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        Column (
+        Column(
             modifier = modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
-        ){
+        ) {
             Row {
-                Text(
-                    text = "Breakfast",
-                    style = MaterialTheme.typography.labelMedium
-                )
+                Column {
+                    Text(
+                        text = "Breakfast",
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    LazyColumn {
+                        items(user.breakfastFoods){ item ->
+
+                        }
+                    }
+                }
+
             }
             Row {
                 Text(
@@ -127,14 +149,43 @@ fun FoodViewScreen(modifier: Modifier = Modifier){
 }
 
 @Composable
-fun WorkoutViewScreen(modifier: Modifier = Modifier){
-    Box(modifier = modifier.fillMaxSize()){
+fun MealFoodsList(modifier: Modifier = Modifier, mealList: List<Food>){
+    LazyColumn {
+        items(mealList){item ->
+
+        }
+    }
+}
+
+@Composable
+fun FoodBubble(modifier: Modifier = Modifier, food:Food ){
+    Button(
+        onClick = {},
+        shape = RoundedCornerShape(size = 12.dp)//eventually add in automatic sizing todo
+        ) {
+            Row {
+                Text(
+                    text = food.foodName,
+                    style = Typography().bodyMedium
+                )
+                Spacer(modifier = modifier.weight(1.5f))
+
+            }
+
+        }
+}
+
+
+@Composable
+fun WorkoutViewScreen(modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxSize()) {
         Text(text = "workouts")
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun DailyViewScreenPreview(){
+fun DailyViewScreenPreview() {
     DailyViewScreen()
 }
+
