@@ -1,6 +1,7 @@
 package com.example.gymappia.data
 
 import com.example.gymappia.model.FitnessGoal
+import com.example.gymappia.model.Gender
 import com.example.gymappia.model.NumberQuestionSubject
 import com.example.gymappia.model.Question
 import com.example.gymappia.model.SingleChoiceQuestionSubject
@@ -19,13 +20,12 @@ object QuestionsDataSource {
                 FitnessGoal.KeepWeight,
                 FitnessGoal.LoseFat
             )
-        ),//remember to make it so that if you choose lose weight, you cant also choose gain weight.. somehow
-        //make a choice class?
+        ),
         Question.SingleChooseQuestion(
             questionText = "Alrighty, this next part will impact the calculations. What is your gender?",
             possibleAnswerChoices = listOf(
-                "Female",
-                "Male"
+                Gender.Female,
+                Gender.Male
             ),
             singleChooseSubject = SingleChoiceQuestionSubject.Gender
         ),

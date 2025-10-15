@@ -31,7 +31,7 @@ class ProgressGraphic {
                 degreeAmt += 45f
                 drawSector(
                     drawScope =this,
-                    progressAmount = 1f,
+                    progressAmount = 0.3f,
                     rotationAmount = degreeAmt,
                     color = color,
                     triangleCenterAngleHalf = halfTriangleCenterAngle

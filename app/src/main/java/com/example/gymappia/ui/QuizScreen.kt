@@ -35,6 +35,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 import com.example.gymappia.data.QuestionsDataSource
 import com.example.gymappia.model.FitnessGoal
 import com.example.gymappia.model.NumberQuestionSubject
@@ -53,14 +55,14 @@ import com.example.gymappia.ui.theme.GymAppIATheme
 
 
 
-val quizHandler: QuizHandler = QuizHandler()
+lateinit var quizHandler: QuizHandler 
 @Composable
 fun QuizScreen(
     modifier: Modifier = Modifier,
     userInitViewModel: UserInitViewModel,
-    toEndQuiz: () -> Unit
+    quizHandlerGiven: QuizHandler
 ) {
-    quizHandler.endQuizFunction = toEndQuiz
+    quizHandler = quizHandlerGiven
     val questions = QuestionsDataSource.userStartQuestions
     val viewModel: UserInitViewModel = userInitViewModel
     //todo when i learn coroutines, add determinate linear progress indicator
@@ -73,8 +75,7 @@ fun QuizScreen(
                 MultipleChoiceScreen(
                     question = currQuestion as Question.MultiChooseQuestion,
                     modifier = modifier,
-                    viewModel = viewModel,
-                    doIfLast = {toEndQuiz()}
+                    viewModel = viewModel
                 )
             }
 
@@ -86,24 +87,21 @@ fun QuizScreen(
                     NumberQuestionSubject.Weight -> R.string.kilograms
                     NumberQuestionSubject.Height -> R.string.centimeters
                     NumberQuestionSubject.Age -> R.string.years_old
-               },
-                doIfLast = {toEndQuiz()}
+               }
             )
 
             QuestionType.SingleChoice -> {
                 SingleChoiceSection(
                     question = currQuestion as Question.SingleChooseQuestion,
                     modifier = modifier,
-                    viewModel = viewModel,
-                    doIfLast = {toEndQuiz()}
+                    viewModel = viewModel
                 )
             }
 
             QuestionType.StringResponse -> StringResponseSection(
                 question = currQuestion as Question.StringResponseQuestion,
                 modifier = modifier,
-                viewModel = viewModel,
-                doIfLast = {toEndQuiz()}
+                viewModel = viewModel
             )
         }
     }
@@ -115,7 +113,6 @@ fun StringResponseSection(
     modifier: Modifier = Modifier,
     question: Question.StringResponseQuestion,
     viewModel: UserInitViewModel,
-    doIfLast:()-> Unit?
 ) {
     var value by rememberSaveable { mutableStateOf("") }
     Column (
@@ -143,7 +140,7 @@ fun StringResponseSection(
         NextButton(alsoOnclick = {
             viewModel.updateUserName(value)
             if(quizHandler.onLastQuestion()){
-                doIfLast()
+                quizHandler.endQuizFunction()
             }
         })
     }
@@ -155,7 +152,6 @@ fun SingleChoiceSection(
     modifier: Modifier = Modifier,
     question: Question.SingleChooseQuestion,
     viewModel: UserInitViewModel,
-    doIfLast:()-> Unit?
 ) {
 
     QuestionTitle(question)
@@ -169,10 +165,12 @@ fun SingleChoiceSection(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(items = question.possibleAnswerChoices) { choice ->
-            ChoiceBubble(
-                stringToShow = choice,
-                onClick = { selectedOption = choice.toInt() }
-            )
+            if(choice is Int) {
+                ChoiceBubble(
+                    stringToShow = stringResource(choice),
+                    onClick = { selectedOption = choice }
+                )
+            }
         }
 
     }
@@ -182,7 +180,7 @@ fun SingleChoiceSection(
             SingleChoiceQuestionSubject.Gender -> viewModel.updateUserGender(selectedOption)
         }
         if(quizHandler.onLastQuestion()){
-            doIfLast()
+            quizHandler.endQuizFunction()
         }
     })
 }
@@ -193,14 +191,13 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
     question: Question.NumberResponseQuestion,
     viewModel: UserInitViewModel,
     @StringRes unitStringResource: Int,
-    modifier: Modifier = Modifier,
-    doIfLast:()-> Unit?
+    modifier: Modifier = Modifier
 ) {
-    var number by rememberSaveable { mutableIntStateOf(0) }
+    var number by rememberSaveable { mutableDoubleStateOf(0.0) }
     Column(
         modifier = modifier.fillMaxHeight(),
-        verticalArrangement = Arrangement.Center
-
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         QuestionTitle(question)
         Row(
@@ -217,7 +214,7 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
                     disabledContainerColor = colorScheme.surface,
                 ),
                 onValueChange = {
-                    number = it.toInt()
+                    number = it.toDouble()
                 }
             )
             Text(
@@ -228,10 +225,10 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
                 when (question.numberQuestionSubject) {
                     NumberQuestionSubject.Weight -> viewModel.updateUserWeight(number)
                     NumberQuestionSubject.Height -> viewModel.updateUserHeight(number)
-                    NumberQuestionSubject.Age -> viewModel.updateUserAge(number)
+                    NumberQuestionSubject.Age -> viewModel.updateUserAge(number.toInt())
                 }
                 if(quizHandler.onLastQuestion()){
-                    doIfLast()
+                    quizHandler.endQuizFunction()
                 }
             })
         }
@@ -287,7 +284,7 @@ fun MultipleChoiceScreen(
     question: Question.MultiChooseQuestion,
     viewModel: UserInitViewModel,
     modifier: Modifier = Modifier,
-    doIfLast:()-> Unit?
+
 ) {
 
     val goals: MutableList<FitnessGoal> = rememberSaveable { mutableListOf() }
@@ -337,7 +334,7 @@ QuestionTitle(question)
             alsoOnclick = {
                 viewModel.updateUserGoals(goals)
                 if(quizHandler.onLastQuestion()){
-                    doIfLast()
+                    quizHandler.endQuizFunction()
                 }
             }
         )
@@ -354,7 +351,10 @@ fun NextButton(alsoOnclick: () -> Unit, modifier: Modifier = Modifier) {
             Log.d("nextQuiz", "Next button was clicked")
 
             if(quizHandler.nextQuestion()==-1) {
-               quizHandler.endQuizFunction()
+                Log.d("navigation", "no next question! will try to move on")
+                quizHandler.endQuizFunction()
+                Log.d("navigation", "got past end quiz function call")
+
             }
             alsoOnclick()
             Log.d("nextQuiz", "also on click executed")
@@ -381,7 +381,7 @@ fun QuizScreenPreview() {
         QuizScreen(
             modifier = Modifier.fillMaxSize(),
             userInitViewModel = viewModel(),
-            toEndQuiz = {  },
+            quizHandlerGiven = QuizHandler(endQuizFunction = {Log.e( "quiz Info", "quiz ended")}, externalNavController = rememberNavController()),
         )
     }
 }

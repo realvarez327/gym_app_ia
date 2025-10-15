@@ -3,13 +3,12 @@ package com.example.gymappia.model
 import androidx.compose.runtime.mutableIntStateOf
 import com.example.gymappia.data.QuestionsDataSource
 import androidx.compose.runtime.State
+import androidx.navigation.NavHostController
 
-class QuizHandler{
+class QuizHandler(val endQuizFunction: () -> Unit, val externalNavController: NavHostController) {
     private val _currentIndex = mutableIntStateOf(0)
     val currentIndex: State<Int> get() = _currentIndex
     val quizLength: Int = QuestionsDataSource.userStartQuestions.size
-    var endQuizFunction:()->Unit ={
-    }
     fun nextQuestion():Int{
         if(_currentIndex.intValue+1< quizLength){
             //next question is in bounds

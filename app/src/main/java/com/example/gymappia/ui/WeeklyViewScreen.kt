@@ -2,9 +2,11 @@ package com.example.gymappia.ui
 
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,7 +36,7 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeeklyViewScreen(modifier: Modifier = Modifier) {
-
+    Log.d("navigation", "weekly view screen loaded :)")
     Column {
         Text(
             text = stringResource(R.string.welcome_user_to_week, UserInitUiState().userName),
@@ -61,7 +63,7 @@ fun DayPreview(modifier: Modifier = Modifier, goToDay: () -> Unit, date:LocalDat
 
     Button(
         modifier = modifier
-            .padding(4.dp)
+            .padding(4.dp).fillMaxWidth()
         , onClick = goToDay,
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.primary)
     ) {

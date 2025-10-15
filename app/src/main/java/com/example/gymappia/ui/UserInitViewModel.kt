@@ -21,14 +21,14 @@ class UserInitViewModel : ViewModel() {
             )
         }
     }
-    fun updateUserWeight(newWeight:Int){
+    fun updateUserWeight(newWeight:Double){
         _uiInitState.update { currentState ->
             currentState.copy(
                 userWeight = newWeight
             )
         }
     }
-    fun updateUserHeight(newHeight:Int){
+    fun updateUserHeight(newHeight:Double){
         _uiInitState.update { currentState ->
             currentState.copy(
                 userHeight = newHeight

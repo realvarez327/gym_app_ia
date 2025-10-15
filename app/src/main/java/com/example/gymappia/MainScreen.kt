@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -25,7 +26,11 @@ import com.example.gymappia.ui.LandingScreen
 import com.example.gymappia.ui.QuizScreen
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymappia.model.QuizHandler
+import com.example.gymappia.ui.AddExerciseScreen
+import com.example.gymappia.ui.AddFoodScreen
 import com.example.gymappia.ui.DailyViewScreen
+import com.example.gymappia.ui.SettingsOverviewScreen
 import com.example.gymappia.ui.UserInitViewModel
 import com.example.gymappia.ui.WeeklyViewScreen
 
@@ -33,7 +38,11 @@ enum class AppScreen(@StringRes val id: Int) {
     Start(id = R.string.app_name),
     Quiz(id = R.string.quiz),
     DailyView(id = R.string.daily),
-    WeeklyView(id =R.string.add_food)
+    WeeklyView(id =R.string.weekly_view),
+    AddFoodSearch(id = R.string.add_food_search),
+    AddExerciseSearch(id = R.string.add_exercise_search),
+    Settings(id = R.string.settings_title)
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,11 +103,16 @@ fun GymApp() {
 
             composable(route = AppScreen.Quiz.name) {
                 val userInitViewModel: UserInitViewModel = viewModel()
+                val quizHandlerToGive = QuizHandler(
+                    externalNavController = navController,
+                    endQuizFunction = { navController.navigate(AppScreen.WeeklyView.name) },
+                )
+
                 QuizScreen(
                     modifier = Modifier
                         .background(color = colorScheme.background),
                     userInitViewModel = userInitViewModel,
-                    toEndQuiz = {navController.navigate(AppScreen.WeeklyView.name)}
+                    quizHandlerGiven = quizHandlerToGive
                 )
             }
 
@@ -110,6 +124,25 @@ fun GymApp() {
                 WeeklyViewScreen(
                     modifier = Modifier.background(color= colorScheme.background)
                 )
+            }
+
+            composable(route = AppScreen.AddFoodSearch.name){
+                AddFoodScreen(
+                    modifier = Modifier.fillMaxSize().background(color = colorScheme.background)
+                )
+            }
+
+            composable(route = AppScreen.AddExerciseSearch.name) {
+                AddExerciseScreen(
+                    modifier = Modifier.fillMaxSize().background(color = colorScheme.background)
+                )
+            }
+
+            composable (route = AppScreen.Settings.name){
+                SettingsOverviewScreen(
+                    modifier = Modifier.fillMaxSize().background(color = colorScheme.background)
+                )
+
             }
         }
 

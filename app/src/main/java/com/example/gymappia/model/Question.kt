@@ -13,7 +13,7 @@ enum class SingleChoiceQuestionSubject{
 }
 sealed class Question(
     open val questionText: String,
-    open val possibleAnswerChoices: List<String>?,
+    open val possibleAnswerChoices: List<Any>?,
     open val possibleGoalChoices: List<FitnessGoal>?,
     open val type: QuestionType,
     open val numberQuestionSubject: NumberQuestionSubject?,
@@ -34,7 +34,7 @@ sealed class Question(
 
     data class MultiChooseQuestion(
         override val questionText: String,
-        override val possibleGoalChoices: List<FitnessGoal>?,
+        override val possibleGoalChoices: List<FitnessGoal>?,// does this have to be nullable
         override val type: QuestionType = QuestionType.MultipleChoice
     ) : Question(
         questionText,
@@ -44,9 +44,10 @@ sealed class Question(
         singleChooseSubject = null,
         possibleAnswerChoices = null)
 
+
     data class SingleChooseQuestion(
         override val questionText: String,
-        override val possibleAnswerChoices: List<String>,
+        override val possibleAnswerChoices: List<Any>,
         override val type: QuestionType = QuestionType.SingleChoice,
         override val singleChooseSubject: SingleChoiceQuestionSubject
     ) : Question(
