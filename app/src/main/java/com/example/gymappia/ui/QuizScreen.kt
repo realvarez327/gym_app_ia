@@ -24,8 +24,10 @@ import androidx.compose.ui.unit.dp
 import com.example.gymappia.R
 import com.example.gymappia.model.Question
 import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import com.example.gymappia.model.QuestionType
@@ -41,21 +43,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.gymappia.data.QuestionsDataSource
 import com.example.gymappia.model.FitnessGoal
+import com.example.gymappia.model.Gender
 import com.example.gymappia.model.NumberQuestionSubject
 import com.example.gymappia.model.QuizHandler
 import com.example.gymappia.model.SingleChoiceQuestionSubject
 import com.example.gymappia.ui.theme.GymAppIATheme
+import kotlinx.coroutines.selects.select
 
 
+lateinit var quizHandler: QuizHandler
 
-
-lateinit var quizHandler: QuizHandler 
 @Composable
 fun QuizScreen(
     modifier: Modifier = Modifier,
@@ -79,16 +83,18 @@ fun QuizScreen(
                 )
             }
 
-            QuestionType.NumberResponse -> InputNumberSection(
-                question = currQuestion as Question.NumberResponseQuestion,
-                viewModel = viewModel,
-                modifier = modifier,
-                unitStringResource = when (currQuestion.numberQuestionSubject) {
-                    NumberQuestionSubject.Weight -> R.string.kilograms
-                    NumberQuestionSubject.Height -> R.string.centimeters
-                    NumberQuestionSubject.Age -> R.string.years_old
-               }
-            )
+            QuestionType.NumberResponse -> {
+                InputNumberSection(
+                    question = currQuestion as Question.NumberResponseQuestion,
+                    viewModel = viewModel,
+                    modifier = modifier,
+                    unitStringResource = when (currQuestion.numberQuestionSubject) {
+                        NumberQuestionSubject.Weight -> R.string.kilograms
+                        NumberQuestionSubject.Height -> R.string.centimeters
+                        NumberQuestionSubject.Age -> R.string.years_old
+                    }
+                )
+            }
 
             QuestionType.SingleChoice -> {
                 SingleChoiceSection(
@@ -115,19 +121,19 @@ fun StringResponseSection(
     viewModel: UserInitViewModel,
 ) {
     var value by rememberSaveable { mutableStateOf("") }
-    Column (
+    Column(
         modifier = modifier
             .fillMaxSize()
             .background(color = colorScheme.background)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
-    ){
+    ) {
         QuestionTitle(question)
 
         OutlinedTextField(
             value = value,
-            onValueChange = {value = it},
+            onValueChange = { value = it },
             singleLine = true,
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = colorScheme.primaryContainer,
@@ -151,42 +157,42 @@ fun SingleChoiceSection(
     question: Question.SingleChooseQuestion,
     viewModel: UserInitViewModel,
 ) {
+    Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        QuestionTitle(question)
+        //store gender
+        var selectedGender: Gender by rememberSaveable { mutableStateOf(Gender.Female) }
 
-    QuestionTitle(question)
-    //store string resource id of choice
-    @StringRes var selectedOption: Int by rememberSaveable { mutableIntStateOf(0) }
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = modifier.padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            //gender passed in is enum!
+            items(items = question.possibleAnswerChoices) { choice ->
+                if (choice is Gender) {
+                    Log.d("gender q", "choice I need to show is a Gender and it is $choice")
+                    ChoiceBubble(
+                        stringToShow = stringResource(choice.stringId),
+                        onClick = {
+                            selectedGender = choice
+                        },
+                        isSingleSelect = true
+                    )
+                }
+            }
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(items = question.possibleAnswerChoices) { choice ->
-            if(choice is Int) {
-                Log.d("gender q", "one choice i need to show is ${stringResource(choice)}")
-            }else{
-                Log.d("gender q", "choice was not int")
-            }
-            if(choice is Int) {
-                ChoiceBubble(
-                    stringToShow = stringResource(choice),
-                    onClick = { selectedOption = choice }
-                )
-            }
         }
 
+        NextButton(alsoOnclick = {
+            when (question.singleChooseSubject) {
+                SingleChoiceQuestionSubject.Gender -> viewModel.updateUserGender(selectedGender)
+            }
+            Log.d("gender q", "gender submitted: ${selectedGender.name}")
+
+        })
     }
 
-    NextButton(alsoOnclick = {
-        when (question.singleChooseSubject) {
-            SingleChoiceQuestionSubject.Gender -> viewModel.updateUserGender(selectedOption)
-        }
-        Log.d("gender q", "gender submitted: $selectedOption")
-//        if(quizHandler.onLastQuestion()){
-//            quizHandler.endQuizFunction()
-//        }
-    })
 }
 
 
@@ -197,6 +203,7 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
     @StringRes unitStringResource: Int,
     modifier: Modifier = Modifier
 ) {
+    var textValue by rememberSaveable { mutableStateOf("") }
     var number by rememberSaveable { mutableDoubleStateOf(0.0) }
     Column(
         modifier = modifier.fillMaxHeight(),
@@ -210,53 +217,77 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
-                value = number.toString(),
+                value = textValue,
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = colorScheme.surface,
                     unfocusedContainerColor = colorScheme.surface,
                     disabledContainerColor = colorScheme.surface,
                 ),
-                onValueChange = {
-                    number = it.toDouble()
-                }
+                onValueChange = { newVal ->
+                    //todo should it check for letters in input??
+                    textValue = newVal
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                ),
+                placeholder = { Text("0.0") }
             )
             Text(
                 text = stringResource(unitStringResource)
             )
 
-            NextButton(alsoOnclick = {
-                when (question.numberQuestionSubject) {
-                    NumberQuestionSubject.Weight -> {
-                        viewModel.updateUserWeight(number)
-                        Log.d("weight q", "weight submitted: $number")
-                    }
-                    NumberQuestionSubject.Height -> {
-                        Log.d("height q", "height submitted: $number")
-                        viewModel.updateUserHeight(number)
-                    }
-                    NumberQuestionSubject.Age -> {
-                        Log.d("age q", "age submitted: $number")
-                        viewModel.updateUserAge(number.toInt())
-                    }
-                }
-            })
+
         }
+        NextButton(alsoOnclick = {
+            number = textValue.toDoubleOrNull() ?: 0.0;
+            textValue =
+                ""//todo eventually make it so that the val for each q is saved, so that user can edit past question answers in quiz
+            when (question.numberQuestionSubject) {
+                NumberQuestionSubject.Weight -> {
+                    viewModel.updateUserWeight(number)
+                    Log.d("weight q", "weight submitted: $number")
+                }
+
+                NumberQuestionSubject.Height -> {
+                    Log.d("height q", "height submitted: $number")
+                    viewModel.updateUserHeight(number)
+                }
+
+                NumberQuestionSubject.Age -> {
+                    Log.d("age q", "age submitted: $number")
+                    viewModel.updateUserAge(number.toInt())
+                }
+            }
+        })
 
     }
 }
 
-
+//todo make it so that only one choice selects at a time for gender
 @Composable
 fun ChoiceBubble(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    stringToShow: String
+    stringToShow: String,
+    isSingleSelect:Boolean
 ) {
+    var selected by rememberSaveable { mutableStateOf(false) }
+
     Button(
         shape = RoundedCornerShape(36.dp),
         modifier = modifier,
-        onClick = onClick
+        onClick = {
+            onClick()
+            selected = !selected
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if(selected){
+                colorScheme.inversePrimary
+            }else{
+                colorScheme.primary
+            }
+        )
     ) {
         Text(
             text = stringToShow
@@ -273,13 +304,14 @@ fun GoalChoiceOptionBubble(
     ChoiceBubble(
         onClick = onclick,
         stringToShow = goal.message,
-        modifier = modifier
+        modifier = modifier,
+        isSingleSelect = false
     )
 }
 
 
 @Composable
-fun QuestionTitle(question: Question, modifier: Modifier = Modifier){
+fun QuestionTitle(question: Question, modifier: Modifier = Modifier) {
 
     Text(
         text = question.questionText,
@@ -289,26 +321,27 @@ fun QuestionTitle(question: Question, modifier: Modifier = Modifier){
     )
 
 }
+
 @Composable
 fun MultipleChoiceScreen(
     question: Question.MultiChooseQuestion,
     viewModel: UserInitViewModel,
     modifier: Modifier = Modifier,
 
-) {
+    ) {
 
     val goals: MutableList<FitnessGoal> = rememberSaveable { mutableListOf() }
     val possibleGoals: List<FitnessGoal>? = question.possibleGoalChoices
 
-    Column (
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
-    ){
+    ) {
 
-QuestionTitle(question)
+        QuestionTitle(question)
         Spacer(
             modifier = Modifier.height(70.dp)
         )
@@ -342,9 +375,9 @@ QuestionTitle(question)
         }
         NextButton(
             alsoOnclick = {
-                Log.d("goals q","goals submitted were $goals")
+                Log.d("goals q", "goals submitted were $goals")
                 viewModel.updateUserGoals(goals)
-                if(quizHandler.onLastQuestion()){
+                if (quizHandler.onLastQuestion()) {
                     quizHandler.endQuizFunction()
                 }
             }
@@ -361,7 +394,7 @@ fun NextButton(alsoOnclick: () -> Unit, modifier: Modifier = Modifier) {
         onClick = {
             Log.d("nextQuiz", "Next button was clicked")
 
-            if(quizHandler.nextQuestion()==-1) {
+            if (quizHandler.nextQuestion() == -1) {
                 Log.d("navigation", "no next question! will try to move on")
                 quizHandler.endQuizFunction()
                 Log.d("navigation", "got past end quiz function call")
@@ -392,7 +425,10 @@ fun QuizScreenPreview() {
         QuizScreen(
             modifier = Modifier.fillMaxSize(),
             userInitViewModel = viewModel(),
-            quizHandlerGiven = QuizHandler(endQuizFunction = {Log.e( "quiz Info", "quiz ended")}, externalNavController = rememberNavController()),
+            quizHandlerGiven = QuizHandler(
+                endQuizFunction = { Log.e("quiz Info", "quiz ended") },
+                externalNavController = rememberNavController()
+            ),
         )
     }
 }

@@ -26,6 +26,7 @@ import com.example.gymappia.ui.LandingScreen
 import com.example.gymappia.ui.QuizScreen
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymappia.model.Day
 import com.example.gymappia.model.QuizHandler
 import com.example.gymappia.ui.AddExerciseScreen
 import com.example.gymappia.ui.AddFoodScreen
@@ -33,6 +34,7 @@ import com.example.gymappia.ui.DailyViewScreen
 import com.example.gymappia.ui.SettingsOverviewScreen
 import com.example.gymappia.ui.UserInitViewModel
 import com.example.gymappia.ui.WeeklyViewScreen
+import java.time.LocalDate
 
 enum class AppScreen(@StringRes val id: Int) {
     Start(id = R.string.app_name),
@@ -117,30 +119,38 @@ fun GymApp() {
             }
 
             composable (route = AppScreen.DailyView.name){
-                DailyViewScreen()
+                // TODO: placeholder!!! will always load today... change!
+                DailyViewScreen(day = Day(LocalDate.now()))
             }
 
             composable (route = AppScreen.WeeklyView.name){
                 WeeklyViewScreen(
-                    modifier = Modifier.background(color= colorScheme.background)
+                    modifier = Modifier.background(color= colorScheme.background),
+                    externalNavController = navController
                 )
             }
 
             composable(route = AppScreen.AddFoodSearch.name){
                 AddFoodScreen(
-                    modifier = Modifier.fillMaxSize().background(color = colorScheme.background)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(color = colorScheme.background)
                 )
             }
 
             composable(route = AppScreen.AddExerciseSearch.name) {
                 AddExerciseScreen(
-                    modifier = Modifier.fillMaxSize().background(color = colorScheme.background)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(color = colorScheme.background)
                 )
             }
 
             composable (route = AppScreen.Settings.name){
                 SettingsOverviewScreen(
-                    modifier = Modifier.fillMaxSize().background(color = colorScheme.background)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(color = colorScheme.background)
                 )
 
             }

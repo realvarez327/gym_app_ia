@@ -23,7 +23,7 @@ class ProgressGraphic {
 
     ) {
         var degreeAmt = 0f
-        Canvas(modifier = modifier.size(240.dp)) {
+        Canvas(modifier = modifier.size(480.dp)) {
             val halfTriangleCenterAngle: Float= (((2*PI)/goalColors.size)/2).toFloat()
             goalColors.forEach { color ->
 
@@ -57,7 +57,7 @@ class ProgressGraphic {
            rotate(degrees = rotationAmount){
                val path = Path()
                val size = drawScope.size
-               val height =(size.width*0.5F)*progressAmount;
+               val height =(size.width*0.9F)*progressAmount;
                val distanceFromCenterLine = height* tan(triangleCenterAngleHalf)
                path.moveTo(size.width*0.5f, size.height*0.5f)
                path.lineTo(size.width*0.5f + height, ((size.height*0.5f)-distanceFromCenterLine))

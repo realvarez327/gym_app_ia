@@ -2,6 +2,7 @@ package com.example.gymappia.ui
 
 import androidx.lifecycle.ViewModel
 import com.example.gymappia.model.FitnessGoal
+import com.example.gymappia.model.Gender
 import com.example.gymappia.model.UserInitUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,7 +45,7 @@ class UserInitViewModel : ViewModel() {
         }
     }
 
-    fun updateUserGender(newGender: Int){
+    fun updateUserGender(newGender: Gender){
         _uiInitState.update { currentState ->
             currentState.copy(
                 gender = newGender

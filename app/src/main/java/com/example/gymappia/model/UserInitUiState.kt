@@ -7,7 +7,7 @@ data class UserInitUiState (
     var userWeight:Double? = null,
     var userName:String = "Sample",
     var goals: List<FitnessGoal>? = null,
-    @StringRes var gender:Int? = null,
+    var gender:Gender = Gender.Female,
     var userAge:Int? = null,
     var userHeight:Double? = null
 )

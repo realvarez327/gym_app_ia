@@ -1,5 +1,7 @@
 package com.example.gymappia.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -34,8 +37,11 @@ import com.example.gymappia.R
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.gymappia.TopBar
+import com.example.gymappia.model.Day
 import com.example.gymappia.model.Food
 import com.example.gymappia.model.SampleUser
+import java.time.LocalDate
 
 
 //todo placeholder code, change when user info is persistently stored
@@ -46,15 +52,26 @@ enum class DayOverviewScreens(@StringRes val stringID: Int) {
     WorkoutView(R.string.workout_view)
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DailyViewScreen(modifier: Modifier = Modifier) {
+fun DailyViewScreen(
+    modifier: Modifier = Modifier,
+    day: Day
+) {
     val navController = rememberNavController()
     val startDestination = DayOverviewScreens.FoodView
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
 
     Scaffold(modifier = modifier) { contentPadding ->
         Column(modifier = modifier.fillMaxSize()) {
+            Row (modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center){
+                Text(
+                    text = day.prettyDate,
+                    style = MaterialTheme.typography.headlineSmall
+                )
+
+            }
             PrimaryTabRow(
                 selectedTabIndex = selectedDestination,
                 modifier = Modifier.padding(contentPadding)
@@ -183,9 +200,10 @@ fun WorkoutViewScreen(modifier: Modifier = Modifier) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun DailyViewScreenPreview() {
-    DailyViewScreen()
+    DailyViewScreen(day = Day(LocalDate.now()))
 }
 
