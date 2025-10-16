@@ -139,9 +139,7 @@ fun StringResponseSection(
 
         NextButton(alsoOnclick = {
             viewModel.updateUserName(value)
-            if(quizHandler.onLastQuestion()){
-                quizHandler.endQuizFunction()
-            }
+            Log.d("name q", "name submitted: $value")
         })
     }
 
@@ -166,6 +164,11 @@ fun SingleChoiceSection(
     ) {
         items(items = question.possibleAnswerChoices) { choice ->
             if(choice is Int) {
+                Log.d("gender q", "one choice i need to show is ${stringResource(choice)}")
+            }else{
+                Log.d("gender q", "choice was not int")
+            }
+            if(choice is Int) {
                 ChoiceBubble(
                     stringToShow = stringResource(choice),
                     onClick = { selectedOption = choice }
@@ -179,9 +182,10 @@ fun SingleChoiceSection(
         when (question.singleChooseSubject) {
             SingleChoiceQuestionSubject.Gender -> viewModel.updateUserGender(selectedOption)
         }
-        if(quizHandler.onLastQuestion()){
-            quizHandler.endQuizFunction()
-        }
+        Log.d("gender q", "gender submitted: $selectedOption")
+//        if(quizHandler.onLastQuestion()){
+//            quizHandler.endQuizFunction()
+//        }
     })
 }
 
@@ -223,12 +227,18 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
 
             NextButton(alsoOnclick = {
                 when (question.numberQuestionSubject) {
-                    NumberQuestionSubject.Weight -> viewModel.updateUserWeight(number)
-                    NumberQuestionSubject.Height -> viewModel.updateUserHeight(number)
-                    NumberQuestionSubject.Age -> viewModel.updateUserAge(number.toInt())
-                }
-                if(quizHandler.onLastQuestion()){
-                    quizHandler.endQuizFunction()
+                    NumberQuestionSubject.Weight -> {
+                        viewModel.updateUserWeight(number)
+                        Log.d("weight q", "weight submitted: $number")
+                    }
+                    NumberQuestionSubject.Height -> {
+                        Log.d("height q", "height submitted: $number")
+                        viewModel.updateUserHeight(number)
+                    }
+                    NumberQuestionSubject.Age -> {
+                        Log.d("age q", "age submitted: $number")
+                        viewModel.updateUserAge(number.toInt())
+                    }
                 }
             })
         }
@@ -332,6 +342,7 @@ QuestionTitle(question)
         }
         NextButton(
             alsoOnclick = {
+                Log.d("goals q","goals submitted were $goals")
                 viewModel.updateUserGoals(goals)
                 if(quizHandler.onLastQuestion()){
                     quizHandler.endQuizFunction()
