@@ -26,4 +26,6 @@ class QuizHandler(val endQuizFunction: () -> Unit, val externalNavController: Na
         return false
     }
 
+
+
 }

@@ -5,21 +5,18 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -47,38 +44,18 @@ fun WeeklyViewScreen(
 
     ) {
     Log.d("navigation", "weekly view screen loaded :)")
-    Scaffold (
-        bottomBar = {
-            BottomAppBar(
-                actions = {
-                    IconButton(
-                        onClick = { externalNavController.navigate(AppScreen.Settings.name) }
-                    ){
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.settings_title)
-
-                        )
-                    }
-                }
-            )
-        }
-    ){innerPadding->
-        Column (
-            modifier = modifier.padding(innerPadding)
-        ){
-            Text(
-                text = stringResource(R.string.welcome_user_to_week, UserInitUiState().userName),
-                modifier = modifier.padding(4.dp),
-                textAlign = TextAlign.Center
-            )
-            val year = LocalDate.now().year
-            val month = LocalDate.now().month
-            val currentDayOfMonth = LocalDate.now().dayOfMonth
-            val today: LocalDate = LocalDate.of(year, month, currentDayOfMonth)
-            val tempAdj: TemporalAdjuster = TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)
-            var iteratingDay = today.with(tempAdj)
-            //todo make current day a different color
+    Column(modifier = modifier.fillMaxSize()) {
+        Text(
+            text = stringResource(R.string.welcome_user_to_week, UserInitUiState().userName),
+            modifier = modifier.padding(4.dp),
+            textAlign = TextAlign.Center
+        )
+        val year = LocalDate.now().year
+        val month = LocalDate.now().month
+        val currentDayOfMonth = LocalDate.now().dayOfMonth
+        val today: LocalDate = LocalDate.of(year, month, currentDayOfMonth)
+        val tempAdj: TemporalAdjuster = TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)
+        var iteratingDay = today.with(tempAdj)
 
             repeat(7) {
                 DayPreview(
@@ -90,24 +67,32 @@ fun WeeklyViewScreen(
                 iteratingDay = iteratingDay.plusDays(1)
             }
 
-        }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun DayPreview(modifier: Modifier = Modifier, goToDay: () -> Unit, date:LocalDate, dayIsToday:Boolean) {
-val containerBg:Color =  if(dayIsToday){
-    MaterialTheme.colorScheme.tertiaryContainer
-}else{
-    MaterialTheme.colorScheme.secondaryContainer
-}
+fun DayPreview(
+    modifier: Modifier = Modifier,
+    goToDay: () -> Unit,
+    date: LocalDate,
+    dayIsToday: Boolean
+) {
+    val containerBg: Color = if (dayIsToday) {
+        MaterialTheme.colorScheme.tertiaryContainer
+    } else {
+        MaterialTheme.colorScheme.secondaryContainer
+    }
     Button(
         modifier = modifier
-            .padding(4.dp).fillMaxWidth()
-        , onClick = goToDay,
+            .padding(4.dp)
+            .fillMaxWidth(),
+        onClick = goToDay,
         contentPadding = PaddingValues(0.dp),
-        colors = ButtonDefaults.buttonColors(containerColor =containerBg, contentColor = MaterialTheme.colorScheme.primary)
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerBg,
+            contentColor = MaterialTheme.colorScheme.primary
+        )
     ) {
         Column(modifier = modifier.padding(4.dp)) {
             Text(
@@ -135,7 +120,7 @@ val containerBg:Color =  if(dayIsToday){
                     Color.DarkGray,
                     Color.Black
                 ),
-                modifier = modifier.size(60.dp)
+                modifier = modifier.size(60.dp).background(color = containerBg)
             )
         }
 

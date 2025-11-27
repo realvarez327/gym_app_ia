@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.outlined.Face
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -25,7 +28,11 @@ import androidx.navigation.compose.composable
 import com.example.gymappia.ui.LandingScreen
 import com.example.gymappia.ui.QuizScreen
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.NavigationBarItem
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gymappia.data.UserSettingsRepository
 import com.example.gymappia.model.Day
 import com.example.gymappia.model.QuizHandler
 import com.example.gymappia.ui.AddExerciseScreen
@@ -40,12 +47,14 @@ enum class AppScreen(@StringRes val id: Int) {
     Start(id = R.string.app_name),
     Quiz(id = R.string.quiz),
     DailyView(id = R.string.daily),
-    WeeklyView(id =R.string.weekly_view),
+    WeeklyView(id = R.string.weekly_view),
     AddFoodSearch(id = R.string.add_food_search),
     AddExerciseSearch(id = R.string.add_exercise_search),
     Settings(id = R.string.settings_title)
 
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +80,6 @@ fun TopBar(
     )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun GymApp() {
     val navController = rememberNavController()
@@ -87,6 +95,46 @@ fun GymApp() {
                 goBack = { navController.navigateUp() },
                 canGoBack = navController.previousBackStackEntry != null
             )
+        },
+        bottomBar = {
+            val currentScreen = backStackEntry?.destination?.route
+            if (!(currentScreen == AppScreen.Start.name || currentScreen == AppScreen.Quiz.name)) {
+                NavigationBar(windowInsets = NavigationBarDefaults.windowInsets){
+                    NavigationBarItem(
+                        selected = (currentScreen== AppScreen.WeeklyView.name),
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription ="weekly view"//todo in strings xml
+
+                            )
+                        },
+                    onClick = {navController.navigate(AppScreen.WeeklyView.name)}
+                    )//weekly
+                    NavigationBarItem(
+                        selected = (currentScreen== AppScreen.DailyView.name),
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Face,
+                                contentDescription ="daily view"//todo in strings xml
+
+                            )
+                        },
+                        onClick = {navController.navigate(AppScreen.DailyView.name)}
+                    )//daily
+                    NavigationBarItem(
+                        selected = (currentScreen== AppScreen.Settings.name),
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Settings,
+                                contentDescription ="settings view"//todo in strings xml
+
+                            )
+                        },
+                        onClick = {navController.navigate(AppScreen.Settings.name)}
+                    )//settings
+                }
+            }
         }
     ) { innerPadding ->
 
@@ -107,7 +155,9 @@ fun GymApp() {
                 val userInitViewModel: UserInitViewModel = viewModel()
                 val quizHandlerToGive = QuizHandler(
                     externalNavController = navController,
-                    endQuizFunction = { navController.navigate(AppScreen.WeeklyView.name) },
+                    endQuizFunction = {
+
+                        navController.navigate(AppScreen.WeeklyView.name) },
                 )
 
                 QuizScreen(
@@ -118,19 +168,19 @@ fun GymApp() {
                 )
             }
 
-            composable (route = AppScreen.DailyView.name){
+            composable(route = AppScreen.DailyView.name) {
                 // TODO: placeholder!!! will always load today... change!
                 DailyViewScreen(day = Day(LocalDate.now()))
             }
 
-            composable (route = AppScreen.WeeklyView.name){
+            composable(route = AppScreen.WeeklyView.name) {
                 WeeklyViewScreen(
-                    modifier = Modifier.background(color= colorScheme.background),
+                    modifier = Modifier.background(color = colorScheme.background),
                     externalNavController = navController
                 )
             }
 
-            composable(route = AppScreen.AddFoodSearch.name){
+            composable(route = AppScreen.AddFoodSearch.name) {
                 AddFoodScreen(
                     modifier = Modifier
                         .fillMaxSize()
@@ -146,7 +196,7 @@ fun GymApp() {
                 )
             }
 
-            composable (route = AppScreen.Settings.name){
+            composable(route = AppScreen.Settings.name) {
                 SettingsOverviewScreen(
                     modifier = Modifier
                         .fillMaxSize()

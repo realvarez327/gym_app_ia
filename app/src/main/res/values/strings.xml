@@ -27,7 +27,9 @@
     <string name="settings_title">Settings</string>
     <string name="preferences">User Preferences</string>
     <string name="goals">User-set goals</string>
-    <string name="time_date">Time and Date</string>
+    <string name="notifTimeControl">Notifications</string>
+
+    <string name="name_not_found">Name Not Found, error occurred</string>
 
 
 

@@ -4,10 +4,10 @@ import androidx.annotation.StringRes
 
 //all these are var becuase they could be changed in creation process by back arrow
 data class UserInitUiState (
-    var userWeight:Double? = null,
+    var userWeight:Float? = null,
     var userName:String = "Sample",
     var goals: List<FitnessGoal>? = null,
     var gender:Gender = Gender.Female,
     var userAge:Int? = null,
-    var userHeight:Double? = null
+    var userHeight:Float? = null
 )

@@ -1,0 +1,166 @@
+package com.example.gymappia.data
+
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.compose.ui.res.stringResource
+import androidx.core.content.edit
+import androidx.datastore.migrations.SharedPreferencesView
+import com.example.gymappia.R
+import com.example.gymappia.model.FitnessGoal
+import com.example.gymappia.model.Gender
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+
+private const val SETTINGS_PREF_NAME = "userPreferences"
+private const val GOALS_KEY = "goals"
+private const val NAME_KEY = "name"
+
+private const val NOTIF_HOUR_KEY = "notifHour"
+private const val NOTIF_MINUTE_KEY = "notifMinute"
+
+private const val AGE_KEY = "age"
+private const val GENDER_KEY = "gender"
+private const val WEIGHT_KEY = "weight"
+private const val HEIGHT_KEY = "height"
+private const val CALORIES_KEY = "calories"
+object UserSettingsRepository {
+
+    fun init(context: Context){
+        sharedPreferences  = context.applicationContext.getSharedPreferences(SETTINGS_PREF_NAME,
+            Context.MODE_PRIVATE)
+    }
+    private val gson = Gson()
+    private lateinit var sharedPreferences : SharedPreferences
+
+    private val _nameFlow = MutableStateFlow(loadName())
+    val nameFlow: StateFlow<String> = _nameFlow
+
+    fun changeName(name:String){
+        sharedPreferences.edit {
+            putString(NAME_KEY, name)
+        }
+        _nameFlow.value = name
+    }
+
+    fun loadName():String{
+        return sharedPreferences.getString(NAME_KEY, "Unknown")?:"Unknown"
+    }
+
+    private val _genderFlow = MutableStateFlow(loadGender())
+    val genderFlow: StateFlow<Gender> = _genderFlow
+
+    fun saveGender(gender:Gender){
+        val jsonVersion = gson.toJson(gender)
+        sharedPreferences.edit {
+            putString(GENDER_KEY,jsonVersion)
+        }
+    }
+
+    fun loadGender():Gender{
+        val jsonVersion = sharedPreferences.getString(GENDER_KEY,"undefined")?:"undefined"
+        val gender = gson.fromJson(jsonVersion, Gender::class.java)
+        return gender
+    }
+
+
+    private val _goalsFlow = MutableStateFlow(loadGoals())
+    val goalsFlow: StateFlow<List<FitnessGoal>> = _goalsFlow
+
+    fun saveGoals(goals:List<FitnessGoal>){
+        val jsonVer = gson.toJson(goals)
+        sharedPreferences.edit {
+            putString(GOALS_KEY,jsonVer)
+        }
+    }
+
+    fun loadGoals(): List<FitnessGoal>{
+        val defaultIfNone = "[]"
+        val jsonVersion = sharedPreferences.getString(GOALS_KEY,defaultIfNone)?:defaultIfNone
+        val type = object : TypeToken<List<FitnessGoal>>() {}.type
+        return gson.fromJson(jsonVersion,type)
+    }
+
+    fun updateGoals(newGoals: List<FitnessGoal>){
+        saveGoals(newGoals)
+        _goalsFlow.value = newGoals
+    }
+
+    private val _hourFlow = MutableStateFlow(loadHour())
+    val hourFlow : StateFlow<Int> = _hourFlow
+
+    fun putHour(newHour:Int){
+        sharedPreferences.edit {
+            putInt(NOTIF_HOUR_KEY,newHour)
+        }
+        _hourFlow.value = newHour
+    }
+
+    fun loadHour():Int{
+        return sharedPreferences.getInt(NOTIF_HOUR_KEY,-1)
+    }
+
+    private val _minuteFlow = MutableStateFlow(loadMinute())
+    val minuteFlow: StateFlow<Int> = _minuteFlow
+
+    fun putMinute(newMinute:Int){
+        sharedPreferences.edit{
+            putInt(NOTIF_MINUTE_KEY,newMinute)
+        }
+        _minuteFlow.value = newMinute
+    }
+
+    fun loadMinute():Int{
+        return sharedPreferences.getInt(NOTIF_MINUTE_KEY,0)
+    }
+
+    private val _heightFlow = MutableStateFlow(loadAge())
+    val heightFlow: StateFlow<Int> = _heightFlow
+
+    fun putHeight(height: Float){
+        sharedPreferences.edit{
+            putFloat(AGE_KEY,height)
+        }
+    }
+    fun loadHeight():Float{
+        return sharedPreferences.getFloat(HEIGHT_KEY,0.0f)
+    }
+
+    private val _ageFlow = MutableStateFlow(loadAge())
+    val ageFlow: StateFlow<Int> = _ageFlow
+
+    fun putAge(ageToPut:Int){
+        sharedPreferences.edit{
+            putInt(AGE_KEY,ageToPut)
+        }
+    }
+    fun loadAge():Int{
+        return sharedPreferences.getInt(AGE_KEY,0)
+    }
+
+    private val _weightFlow = MutableStateFlow(loadAge())
+    val weightFlow: StateFlow<Int> = _weightFlow
+
+    fun putWeight(weight: Float){
+        sharedPreferences.edit{
+            putFloat(WEIGHT_KEY,weight)
+        }
+    }
+    fun loadWeight():Float{
+        return sharedPreferences.getFloat(WEIGHT_KEY,0.0f)
+    }
+
+    private val _dailyCaloriesFlow = MutableStateFlow(loadCalories())
+    val dailyCaloriesFlow: StateFlow<Int> = _dailyCaloriesFlow
+
+    fun putDailyCalories(cals:Int){
+        sharedPreferences.edit {
+            putInt(CALORIES_KEY,cals)
+        }
+    }
+
+    fun loadCalories():Int{
+        return sharedPreferences.getInt(CALORIES_KEY,0)
+    }
+}

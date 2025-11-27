@@ -38,6 +38,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -204,7 +205,7 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
     modifier: Modifier = Modifier
 ) {
     var textValue by rememberSaveable { mutableStateOf("") }
-    var number by rememberSaveable { mutableDoubleStateOf(0.0) }
+    var number by rememberSaveable { mutableFloatStateOf(0.0f) }
     Column(
         modifier = modifier.fillMaxHeight(),
         verticalArrangement = Arrangement.Center,
@@ -240,7 +241,7 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
 
         }
         NextButton(alsoOnclick = {
-            number = textValue.toDoubleOrNull() ?: 0.0;
+            number = textValue.toFloatOrNull() ?: 0.0f;
             textValue =
                 ""//todo eventually make it so that the val for each q is saved, so that user can edit past question answers in quiz
             when (question.numberQuestionSubject) {
@@ -396,7 +397,7 @@ fun NextButton(alsoOnclick: () -> Unit, modifier: Modifier = Modifier) {
 
             if (quizHandler.nextQuestion() == -1) {
                 Log.d("navigation", "no next question! will try to move on")
-                quizHandler.endQuizFunction()
+
                 Log.d("navigation", "got past end quiz function call")
 
             }
