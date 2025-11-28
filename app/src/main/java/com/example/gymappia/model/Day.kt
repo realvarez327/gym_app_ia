@@ -3,7 +3,7 @@ package com.example.gymappia.model
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.gymappia.data.HealthDatabase
-import com.example.gymappia.data.ExerciseEntity
+import com.example.gymappia.data.WorkoutEntity
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -19,7 +19,7 @@ class Day(val date: LocalDate) {
         val dao = db.exerciseDao()
         var order:Int = 0
         toLog.workouts.forEach { workout ->
-            val entity = ExerciseEntity(
+            val entity = WorkoutEntity(
                 workoutOrderInDay = order,
                 exerciseName = workout.workoutName,
                 durationInMinutes = workout.durationMinutes,

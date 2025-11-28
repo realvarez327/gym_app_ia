@@ -3,23 +3,20 @@ package com.example.gymappia.data
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import kotlin.getValue
 
-object FoodApiClient {
-    val apiService: FoodApi by lazy {
-        FoodRetrofitClient.retrofit.create(FoodApi::class.java)
+object ExerciseApiClient{
+    val apiService: ExerciseApi by lazy {
+        ExerciseRetrofitClient.retrofit.create(ExerciseApi::class.java)
     }
 }
 
-object FoodRetrofitClient {
-    private const val BASE_URL = "https://world.openfoodfacts.org/api/v2/"
+object ExerciseRetrofitClient{
+    private const val BASE_URL = "https://exercisedb-api1.p.rapidapi.com/"
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
             .client(SharedHttpClientProvider.client)
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
-
-
     }
 }

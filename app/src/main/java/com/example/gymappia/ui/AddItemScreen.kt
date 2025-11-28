@@ -17,7 +17,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.rounded.Search
+
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -69,7 +69,7 @@ fun AddFoodScreen(modifier: Modifier = Modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AddItemSearchBar(
                 modifier,
-                onSearch = { },
+                onSearch = { searchFoodByQuery()},
                 hint = stringResource(R.string.add_food_search)
             )
 
@@ -91,11 +91,18 @@ fun AddFoodScreen(modifier: Modifier = Modifier) {
     }
 }
 
+fun searchFoodByQuery(query:String, scope: CoroutineScope){
+    var response:Food
+    scope.launch {
+
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddItemSearchBar(modifier: Modifier = Modifier, onSearch: (String) -> Unit, hint: String) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
-    Row() {
+    Row{
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },

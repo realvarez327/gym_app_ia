@@ -10,11 +10,11 @@ import java.time.LocalDate
 @Dao
 interface ExerciseDAO {
     @Query("SELECT * FROM workouts WHERE day_of_workout = :day")
-    fun loadWorkoutsOfDay(day: LocalDate): List<ExerciseEntity>
+    fun loadWorkoutsOfDay(day: LocalDate): List<WorkoutEntity>
 
     @Insert
-    fun addWorkout(workout: ExerciseEntity)
+    fun addWorkout(workout: WorkoutEntity)
 
     @Delete
-    fun removeWorkout(workout: ExerciseEntity)
+    fun removeWorkout(workout: WorkoutEntity)
 }

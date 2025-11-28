@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 
 
 @Database(entities = [
-    ExerciseEntity::class,
+    WorkoutEntity::class,
     FoodEntity::class
                      ], version = 1, exportSchema = false)
 @TypeConverters(
