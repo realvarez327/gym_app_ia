@@ -115,7 +115,7 @@ fun AddFoodScreen(modifier: Modifier = Modifier, viewModel: AddItemViewModel = v
         Row(verticalAlignment = Alignment.CenterVertically) {
             AddItemSearchBar(
                 modifier,
-                onSearch = { query -> viewModel.queryFoodSearch(query) },//todo
+                onSearch = { query -> viewModel.queryFoodSearch(query) },
                 hint = stringResource(R.string.add_food_search)
             )
 
