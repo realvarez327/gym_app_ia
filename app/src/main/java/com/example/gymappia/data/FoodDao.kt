@@ -9,11 +9,14 @@ import java.time.LocalDate
 @Dao
 interface FoodDao {
     @Query("SELECT * FROM foods WHERE day =:givenDay")
-    fun loadDaysFoods(givenDay: LocalDate): List<FoodEntity>
+    suspend fun loadDaysFoods(givenDay: LocalDate): List<FoodEntity>
+
+    @Query("SELECT * FROM foods WHERE day=:givenDay AND parent_meal_type=:givenMealType")
+    suspend fun loadFoodByMealType(givenDay: LocalDate, givenMealType: MealType): List<FoodEntity>
 
     @Insert
-    fun addFood(foodToAdd: FoodEntity)
+    suspend fun addFood(foodToAdd: FoodEntity)
 
     @Delete
-    fun deleteFood(foodToKill: FoodEntity)
+    suspend fun deleteFood(foodToKill: FoodEntity)
 }

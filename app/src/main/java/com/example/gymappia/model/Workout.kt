@@ -1,10 +1,14 @@
 package com.example.gymappia.model
 
-
-class Workout {
-    var durationMinutes:Double = 0.0
-    var workoutName:String = ""
-    var caloriesBurned:Double=0.0
+import java.time.LocalDate
 
 
-}
+class Workout (
+
+    var workoutName:String = "",
+    var repetitions:Int = 1,
+    var orderInDay:Int =1,
+    var parentDay: LocalDate
+
+
+)

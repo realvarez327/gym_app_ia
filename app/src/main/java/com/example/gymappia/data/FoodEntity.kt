@@ -12,7 +12,7 @@ data class FoodEntity(
     @ColumnInfo(name = "serving_size") val servingSize: Float,
     @ColumnInfo(name = "food_name") val foodName: String,
     @ColumnInfo(name = "nutriments_in_serving_size") val nutrimentsInServing: NutrimentsInServing,
-    @ColumnInfo(name = "image_url") val imageUrl:String,
+    @ColumnInfo(name = "image_url") val imageUrl:String?,
     @ColumnInfo(name = "day") val dayOfConsumption: LocalDate
 )
 

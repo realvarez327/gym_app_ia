@@ -1,10 +1,7 @@
-package com.example.gymappia.ui
+package com.example.gymappia.model
 
 import androidx.lifecycle.ViewModel
 import com.example.gymappia.data.UserSettingsRepository
-import com.example.gymappia.model.FitnessGoal
-import com.example.gymappia.model.Gender
-import com.example.gymappia.model.UserInitUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

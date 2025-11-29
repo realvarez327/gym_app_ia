@@ -1,6 +1,7 @@
 package com.example.gymappia.data
 
-data class FoodBarcodeResponse(
+
+data class FoodProduct(
     val code: String,
     val image_url:String?,
     val nutrimentsPer100g:NutrimentsPer100g,

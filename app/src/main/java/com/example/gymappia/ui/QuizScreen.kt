@@ -37,9 +37,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
+
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
+
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -55,8 +55,9 @@ import com.example.gymappia.model.Gender
 import com.example.gymappia.model.NumberQuestionSubject
 import com.example.gymappia.model.QuizHandler
 import com.example.gymappia.model.SingleChoiceQuestionSubject
+import com.example.gymappia.model.UserInitViewModel
 import com.example.gymappia.ui.theme.GymAppIATheme
-import kotlinx.coroutines.selects.select
+
 
 
 lateinit var quizHandler: QuizHandler
@@ -241,7 +242,7 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
 
         }
         NextButton(alsoOnclick = {
-            number = textValue.toFloatOrNull() ?: 0.0f;
+            number = textValue.toFloatOrNull() ?: 0.0f
             textValue =
                 ""//todo eventually make it so that the val for each q is saved, so that user can edit past question answers in quiz
             when (question.numberQuestionSubject) {

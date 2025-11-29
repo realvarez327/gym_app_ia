@@ -14,4 +14,5 @@ object SharedHttpClientProvider {
             .retryOnConnectionFailure(true)
             .build()
     }
+
 }

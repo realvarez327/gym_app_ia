@@ -32,20 +32,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.gymappia.R
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.gymappia.TopBar
+
+import com.example.gymappia.data.MealType
 import com.example.gymappia.model.Day
 import com.example.gymappia.model.Food
-import com.example.gymappia.model.SampleUser
 import java.time.LocalDate
 
-
-//todo placeholder code, change when user info is persistently stored
-val user: SampleUser = SampleUser()
 
 enum class DayOverviewScreens(@StringRes val stringID: Int) {
     FoodView(R.string.food_view),
@@ -57,7 +55,8 @@ enum class DayOverviewScreens(@StringRes val stringID: Int) {
 @Composable
 fun DailyViewScreen(
     modifier: Modifier = Modifier,
-    day: Day
+    day: Day,
+    dayWeekVM: WeekDayViewModel
 ) {
     val navController = rememberNavController()
     val startDestination = DayOverviewScreens.FoodView
@@ -65,7 +64,7 @@ fun DailyViewScreen(
 
     Scaffold(modifier = modifier) { contentPadding ->
         Column(modifier = modifier.fillMaxSize()) {
-            Row (modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center){
+            Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(
                     text = day.prettyDate,
                     style = MaterialTheme.typography.headlineSmall
@@ -93,7 +92,7 @@ fun DailyViewScreen(
                     )
                 }
             }
-            DailyViewNavHost(navController, startDestination, modifier.padding(contentPadding))
+            DailyViewNavHost(navController, startDestination, modifier.padding(contentPadding),dayWeekVM)
         }
     }
 }
@@ -102,7 +101,8 @@ fun DailyViewScreen(
 fun DailyViewNavHost(
     navController: NavHostController,
     startDestination: DayOverviewScreens,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    DWVM: WeekDayViewModel
 ) {
     NavHost(
         navController,
@@ -111,8 +111,8 @@ fun DailyViewNavHost(
         DayOverviewScreens.entries.forEach { destination ->
             composable(destination.name) {
                 when (destination) {
-                    DayOverviewScreens.FoodView -> FoodViewScreen(modifier)
-                    DayOverviewScreens.WorkoutView -> WorkoutViewScreen(modifier)
+                    DayOverviewScreens.FoodView -> FoodViewScreen(modifier, DWVM)
+                    DayOverviewScreens.WorkoutView -> WorkoutViewScreen(modifier,DWVM)
                 }
             }
         }
@@ -121,7 +121,11 @@ fun DailyViewNavHost(
 
 
 @Composable
-fun FoodViewScreen(modifier: Modifier = Modifier) {
+fun FoodViewScreen(modifier: Modifier = Modifier, DWVM: WeekDayViewModel) {
+    val breakfastEntities = DWVM.daySelected.foods.filter { food -> food.mealType== MealType.Breakfast }
+    val lunchEntities = DWVM.daySelected.foods.filter { food -> food.mealType== MealType.Lunch }
+    val dinnerEntities = DWVM.daySelected.foods.filter { food -> food.mealType== MealType.Dinner }
+    val snackEntities = DWVM.daySelected.foods.filter { food -> food.mealType== MealType.Snack }
     Box(
         modifier = modifier.fillMaxSize()
     ) {
@@ -135,66 +139,84 @@ fun FoodViewScreen(modifier: Modifier = Modifier) {
                         text = "Breakfast",
                         style = MaterialTheme.typography.labelMedium
                     )
-                    LazyColumn {
-                        items(user.breakfastFoods){ item ->
+                    MealFoodsList(
+                        mealList = breakfastEntities
+                    )
 
-                        }
-                    }
                 }
-
             }
-            Row {
+
+        }
+        Row {
+            Column {
                 Text(
                     text = "Lunch",
                     style = MaterialTheme.typography.labelMedium
                 )
+                MealFoodsList(
+                    mealList = lunchEntities
+                )
+
             }
-            Row {
+        }
+        Row {
+            Column {
                 Text(
                     text = "Snacks",
                     style = MaterialTheme.typography.labelMedium
                 )
+                MealFoodsList(
+                    mealList = snackEntities
+                )
+
             }
-            Row {
+        }
+        Row {
+            Column {
                 Text(
                     text = "Dinner",
                     style = MaterialTheme.typography.labelMedium
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun MealFoodsList(modifier: Modifier = Modifier, mealList: List<Food>){
-    LazyColumn {
-        items(mealList){item ->
-
-        }
-    }
-}
-
-@Composable
-fun FoodBubble(modifier: Modifier = Modifier, food:Food ){
-    Button(
-        onClick = {},
-        shape = RoundedCornerShape(size = 12.dp)//eventually add in automatic sizing todo
-        ) {
-            Row {
-                Text(
-                    text = food.foodName,
-                    style = Typography().bodyMedium
+                MealFoodsList(
+                    mealList = dinnerEntities
                 )
-                Spacer(modifier = modifier.weight(1.5f))
 
             }
+        }
+    }
+
+}
+
+@Composable
+fun MealFoodsList(modifier: Modifier = Modifier, mealList: List<Food>) {
+    LazyColumn {
+        items(mealList) { item ->
+            FoodBubble(food = item)
+        }
+    }
+}
+
+@Composable
+fun FoodBubble(modifier: Modifier = Modifier, food: Food) {
+    Button(
+        onClick = {},//enable travelling to same focus screen todo
+        shape = RoundedCornerShape(size = 12.dp)
+    ) {
+        Row {
+            Text(
+                text = food.foodName,
+                style = Typography().bodyMedium
+            )
+            Spacer(modifier = modifier.weight(1.5f))
 
         }
+
+    }
 }
 
 
 @Composable
-fun WorkoutViewScreen(modifier: Modifier = Modifier) {
+fun WorkoutViewScreen(modifier: Modifier = Modifier, DWVM: WeekDayViewModel) {
     Box(modifier = modifier.fillMaxSize()) {
         Text(text = "workouts")
     }
@@ -204,6 +226,6 @@ fun WorkoutViewScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun DailyViewScreenPreview() {
-    DailyViewScreen(day = Day(LocalDate.now()))
+    DailyViewScreen(day = Day(LocalDate.now()), dayWeekVM = viewModel())
 }
 

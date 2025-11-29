@@ -5,10 +5,9 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
+
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.gymappia.AppScreen
@@ -35,14 +35,14 @@ import java.time.LocalDate
 import java.time.temporal.TemporalAdjuster
 import java.time.temporal.TemporalAdjusters
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeeklyViewScreen(
     modifier: Modifier = Modifier,
     externalNavController: NavHostController,
-
-    ) {
+    dayToWeekVM: WeekDayViewModel
+) {
     Log.d("navigation", "weekly view screen loaded :)")
     Column(modifier = modifier.fillMaxSize()) {
         Text(
@@ -57,20 +57,19 @@ fun WeeklyViewScreen(
         val tempAdj: TemporalAdjuster = TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)
         var iteratingDay = today.with(tempAdj)
 
-            repeat(7) {
-                DayPreview(
-                    modifier = modifier,
-                    goToDay = { externalNavController.navigate(AppScreen.DailyView.name) },
-                    date = iteratingDay,
-                    dayIsToday = (iteratingDay.isEqual(today))
-                )
-                iteratingDay = iteratingDay.plusDays(1)
-            }
+        repeat(7) {
+            DayPreview(
+                modifier = modifier,
+                goToDay = { externalNavController.navigate(AppScreen.DailyView.name) },
+                date = iteratingDay,
+                dayIsToday = (iteratingDay.isEqual(today))
+            )
+            iteratingDay = iteratingDay.plusDays(1)
+        }
 
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DayPreview(
     modifier: Modifier = Modifier,
@@ -120,7 +119,9 @@ fun DayPreview(
                     Color.DarkGray,
                     Color.Black
                 ),
-                modifier = modifier.size(60.dp).background(color = containerBg)
+                modifier = modifier
+                    .size(60.dp)
+                    .background(color = containerBg)
             )
         }
 
@@ -131,5 +132,9 @@ fun DayPreview(
 @Preview(showBackground = true)
 @Composable
 fun WeeklyViewScreenPreview(modifier: Modifier = Modifier) {
-    WeeklyViewScreen(modifier, externalNavController = rememberNavController())
+    WeeklyViewScreen(
+        modifier,
+        externalNavController = rememberNavController(),
+        dayToWeekVM = viewModel()
+    )
 }

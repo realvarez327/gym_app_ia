@@ -9,9 +9,8 @@ import java.time.LocalDate
 data class WorkoutEntity(
     @PrimaryKey val workoutOrderInDay:Int,
     @ColumnInfo(name = "exercise_name") val exerciseName:String,
-    @ColumnInfo(name="duration_in_minutes") val durationInMinutes: Double,
-    @ColumnInfo(name = "calories_burned") val caloriesBurned:Double,
-    @ColumnInfo(name="day_of_workout") val dayOfWorkout: LocalDate
+    @ColumnInfo(name="day_of_workout") val dayOfWorkout: LocalDate,
+    @ColumnInfo(name = "reps")val repetitions:Int
 
 
 )

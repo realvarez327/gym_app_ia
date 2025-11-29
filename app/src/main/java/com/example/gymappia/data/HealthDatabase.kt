@@ -15,7 +15,7 @@ import androidx.room.TypeConverters
     ConvertersForRoom::class
 )
 abstract class HealthDatabase : RoomDatabase() {
-    abstract fun exerciseDao(): ExerciseDAO
+    abstract fun exerciseDao(): WorkoutDao
     abstract fun foodDao(): FoodDao
 
     companion object {

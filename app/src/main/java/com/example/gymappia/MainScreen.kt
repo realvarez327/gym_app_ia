@@ -1,7 +1,5 @@
 package com.example.gymappia
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,17 +29,17 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.gymappia.data.UserSettingsRepository
-import com.example.gymappia.model.Day
+import androidx.navigation.compose.navigation
 import com.example.gymappia.model.QuizHandler
 import com.example.gymappia.ui.AddExerciseScreen
 import com.example.gymappia.ui.AddFoodScreen
 import com.example.gymappia.ui.DailyViewScreen
 import com.example.gymappia.ui.SettingsOverviewScreen
-import com.example.gymappia.ui.UserInitViewModel
+import com.example.gymappia.model.UserInitViewModel
+import com.example.gymappia.ui.WeekDayViewModel
 import com.example.gymappia.ui.WeeklyViewScreen
-import java.time.LocalDate
 
 enum class AppScreen(@StringRes val id: Int) {
     Start(id = R.string.app_name),
@@ -168,16 +166,26 @@ fun GymApp() {
                 )
             }
 
-            composable(route = AppScreen.DailyView.name) {
-                // TODO: placeholder!!! will always load today... change!
-                DailyViewScreen(day = Day(LocalDate.now()))
-            }
+            navigation(startDestination = AppScreen.WeeklyView.name, route = "week_graph"){
+                composable (route = AppScreen.WeeklyView.name){entry ->
+                    val parentEntry = remember(entry){
+                        navController.getBackStackEntry("week_graph")
+                    }
+                    val dayWeekVM: WeekDayViewModel = viewModel(parentEntry)
+                    WeeklyViewScreen(
+                        modifier = Modifier.background(color = colorScheme.background),
+                        externalNavController = navController,
+                        dayToWeekVM = dayWeekVM
+                    )
+                }
 
-            composable(route = AppScreen.WeeklyView.name) {
-                WeeklyViewScreen(
-                    modifier = Modifier.background(color = colorScheme.background),
-                    externalNavController = navController
-                )
+                composable (route = AppScreen.DailyView.name){entry ->
+                    val parentEntry = remember(entry){
+                        navController.getBackStackEntry("week_graph")
+                    }
+                    val dayWeekVM: WeekDayViewModel = viewModel(parentEntry)
+                    DailyViewScreen(day = dayWeekVM.daySelected, dayWeekVM = dayWeekVM)
+                }
             }
 
             composable(route = AppScreen.AddFoodSearch.name) {
