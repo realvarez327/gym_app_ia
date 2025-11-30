@@ -163,7 +163,6 @@ fun GymApp() {
             composable(route = AppScreen.Quiz.name) {
                 val userInitViewModel: UserInitViewModel = viewModel()
                 val quizHandlerToGive = QuizHandler(
-                    externalNavController = navController,
                     endQuizFunction = {
                         navController.navigate(AppScreen.WeeklyView.name)
                         userInitViewModel.updateRepo()
@@ -186,8 +185,8 @@ fun GymApp() {
                     val dayWeekVM: WeekDayViewModel = viewModel(parentEntry)
                     WeeklyViewScreen(
                         modifier = Modifier.background(color = colorScheme.background),
-                        externalNavController = navController,
-                        dayToWeekVM = dayWeekVM
+                        dayToWeekVM = dayWeekVM,
+                        goToDay = { navController.navigate(AppScreen.DailyView.name) }
                     )
                 }
 

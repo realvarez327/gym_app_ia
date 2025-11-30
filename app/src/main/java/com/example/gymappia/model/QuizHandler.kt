@@ -5,7 +5,7 @@ import com.example.gymappia.data.QuestionsDataSource
 import androidx.compose.runtime.State
 import androidx.navigation.NavHostController
 
-class QuizHandler(val endQuizFunction: () -> Unit, val externalNavController: NavHostController) {
+class QuizHandler(val endQuizFunction: () -> Unit) {
     private val _currentIndex = mutableIntStateOf(0)
     val currentIndex: State<Int> get() = _currentIndex
     val quizLength: Int = QuestionsDataSource.userStartQuestions.size
