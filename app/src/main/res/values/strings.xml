@@ -23,6 +23,7 @@
     <string name="add_exercise">Add exercise</string>
     <string name = "search">Search</string>
     <string name="weekly_view">Weekly View</string>
+    <string name="daily_view">Daily View</string>
 
     <string name="settings_title">Settings</string>
     <string name="preferences">User Preferences</string>
@@ -31,6 +32,8 @@
 
     <string name="name_not_found">Name Not Found, error occurred</string>
 
+    <string name="exercise_graph_name">exercise_graph</string>
+    <string name="food_graph_name">food_graph</string>
 
 
 </resources>

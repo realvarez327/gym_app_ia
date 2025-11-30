@@ -74,38 +74,12 @@ enum class AddItemScreenNames(val navName: String) {
 }
 
 
-@Composable
-fun AddItemNavHost(
-    navController: NavHostController = rememberNavController(),
-    startDestination: AddItemScreenNames,
-    viewModel: AddItemViewModel = viewModel()
-) {
-    NavHost(
-        navController = navController,
-        startDestination = startDestination
-    ){
-        composable(route = AddItemScreenNames.AddFood.navName) {
-            AddFoodScreen(viewModel = viewModel)
-        }
-        composable(route = AddItemScreenNames.AddWorkout.navName) {
-            AddExerciseScreen(viewModel = viewModel)
-        }
-        composable(route = AddItemScreenNames.FocusWorkout.navName) {
-            WorkoutFocusScreen(viewModel = viewModel, toShow = viewModel.selectedWorkout)
-        }
-        composable(route = AddItemScreenNames.FocusFood.navName) {
-            FoodFocusScreen(toShow = viewModel.selectedFood, addItemAddViewModel = viewModel)
-        }
 
-    }
-
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddFoodScreen(modifier: Modifier = Modifier, viewModel: AddItemViewModel = viewModel()) {
     val currentActivity = LocalActivity.current
-    AddItemNavHost(startDestination = AddItemScreenNames.AddFood)
 
     Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -187,7 +161,6 @@ fun AddExerciseScreen(
     modifier: Modifier = Modifier,
     viewModel: AddItemViewModel = viewModel()
 ) {
-    AddItemNavHost(startDestination = AddItemScreenNames.AddWorkout)
 
     Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(

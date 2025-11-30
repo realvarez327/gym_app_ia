@@ -70,12 +70,7 @@ enum class SettingOption(@StringRes val settingNameId: Int) {
     Goals(settingNameId = R.string.goals)
 }
 
-enum class SubSettingScreens(@StringRes val id: Int) {
-    Preferences(id = R.string.preferences),
-    Goals(id = R.string.goals),
-    Main(id = R.string.settings_title),
-    NotificationControl(id = R.string.notifTimeControl)
-}
+
 
 @Composable
 fun SettingsOverviewScreen(modifier: Modifier = Modifier) {
@@ -105,58 +100,7 @@ fun SettingsOverviewScreen(modifier: Modifier = Modifier) {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SettingsMain(modifier: Modifier = Modifier) {
-    val navController = rememberNavController()
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentScreen = AppScreen.valueOf(
-        backStackEntry?.destination?.route ?: SubSettingScreens.Main.name
-    )
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(currentScreen.name) },
-                modifier = modifier,
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = stringResource(R.string.back_button_content_desc)
-                        )
-                    }
-                }
-            )
-        },
-        modifier = modifier.fillMaxSize()
-    ) { innerPadding ->
-        NavHost(
-            modifier = Modifier.padding(innerPadding),
-            navController = navController,
-            startDestination = SubSettingScreens.Main.name
-        ) {
-            composable(route = SubSettingScreens.Main.name) {
-                SettingsOverviewScreen()
-            }
-            composable(route = SubSettingScreens.Goals.name) {
-                IndividualSettingsScreen(
-                    modifier = modifier,
-                    settingOption = SettingOption.Goals,
-                    goBack = { navController.navigateUp() }
-                )
-            }
 
-            composable(route = SubSettingScreens.Preferences.name) {
-                PreferencesManagingScreen()
-            }
-
-            composable(route = SubSettingScreens.NotificationControl.name) {
-                NotifTimeManagingScreen()
-            }
-        }
-
-    }
-}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -193,59 +137,7 @@ fun SettingOptionButton(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun IndividualSettingsScreen(
-    modifier: Modifier = Modifier,
-    settingOption: SettingOption,
-    goBack: () -> Unit
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(settingOption.settingNameId)) },
-                modifier = modifier,
-                navigationIcon = {
-                    IconButton(onClick = { goBack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = stringResource(R.string.back_button_content_desc)
-                        )
-                    }
-                }
-            )
-        },
-        modifier = modifier.fillMaxSize()
-    ) { innerPadding ->
 
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(color = Color.Yellow)
-        ) {
-
-            when (settingOption) {
-                SettingOption.Preferences -> {
-                    PreferencesManagingScreen()
-
-                }
-
-                SettingOption.Goals -> {
-                    GoalsManagingScreen()
-
-                }
-
-                SettingOption.Notifications -> {
-                    NotifTimeManagingScreen()
-                }
-            }
-
-        }
-
-
-    }
-}
 
 //todo this does not survive rotation, maybe should in the future
 @Composable
@@ -442,10 +334,10 @@ fun PreferencesManagingScreen(modifier: Modifier = Modifier) {
             if (localAge.toInt() != currAge) {
                 UserSettingsRepository.putAge(localAge.toIntOrNull() ?: 0)
             }
-            if (localHeight.toInt() != currHeight) {
+            if (localHeight.toFloat() != currHeight) {
                 UserSettingsRepository.putHeight(localHeight.toFloatOrNull() ?: 0.0f)
             }
-            if (localWeight.toInt() != currWeight) {
+            if (localWeight.toFloat() != currWeight) {
                 UserSettingsRepository.putWeight(localWeight.toFloatOrNull() ?: 0.0f)
             }
 

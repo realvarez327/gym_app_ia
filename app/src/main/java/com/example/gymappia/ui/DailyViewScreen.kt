@@ -24,24 +24,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import com.example.gymappia.R
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-
 import com.example.gymappia.data.MealType
 import com.example.gymappia.model.Day
 import com.example.gymappia.model.Food
+import com.example.gymappia.model.Workout
 import java.time.LocalDate
 
 
@@ -50,7 +46,7 @@ enum class DayOverviewScreens(@StringRes val stringID: Int) {
     WorkoutView(R.string.workout_view)
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DailyViewScreen(
@@ -58,9 +54,7 @@ fun DailyViewScreen(
     day: Day,
     dayWeekVM: WeekDayViewModel
 ) {
-    val navController = rememberNavController()
-    val startDestination = DayOverviewScreens.FoodView
-    var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
+    var selectedDestination by rememberSaveable { mutableStateOf(DayOverviewScreens.FoodView) }
 
     Scaffold(modifier = modifier) { contentPadding ->
         Column(modifier = modifier.fillMaxSize()) {
@@ -72,53 +66,32 @@ fun DailyViewScreen(
 
             }
             PrimaryTabRow(
-                selectedTabIndex = selectedDestination,
+                selectedTabIndex = selectedDestination.ordinal,
                 modifier = Modifier.padding(contentPadding)
             ) {
-                DayOverviewScreens.entries.forEachIndexed { index, destination ->
+                DayOverviewScreens.entries.forEach { screen ->
                     Tab(
-                        selected = selectedDestination == index,
-                        onClick = {
-                            navController.navigate(route = destination.name)
-                            selectedDestination = index
-                        },
-                        text = {
-                            Text(
-                                text = stringResource(destination.stringID),
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                        selected = (selectedDestination==screen),
+                        onClick = { selectedDestination = screen },
+                        text = {Text(
+                            text = stringResource(screen.stringID)
+                        )}
                     )
+
                 }
             }
-            DailyViewNavHost(navController, startDestination, modifier.padding(contentPadding),dayWeekVM)
-        }
-    }
-}
+            when(selectedDestination){
+                DayOverviewScreens.FoodView->{
+                    FoodViewScreen(modifier, dayWeekVM)
+                }
 
-@Composable
-fun DailyViewNavHost(
-    navController: NavHostController,
-    startDestination: DayOverviewScreens,
-    modifier: Modifier = Modifier,
-    DWVM: WeekDayViewModel
-) {
-    NavHost(
-        navController,
-        startDestination = startDestination.name
-    ) {
-        DayOverviewScreens.entries.forEach { destination ->
-            composable(destination.name) {
-                when (destination) {
-                    DayOverviewScreens.FoodView -> FoodViewScreen(modifier, DWVM)
-                    DayOverviewScreens.WorkoutView -> WorkoutViewScreen(modifier,DWVM)
+                DayOverviewScreens.WorkoutView->{
+                    WorkoutViewScreen(modifier, dayWeekVM)
                 }
             }
         }
     }
 }
-
 
 @Composable
 fun FoodViewScreen(modifier: Modifier = Modifier, DWVM: WeekDayViewModel) {
@@ -216,9 +189,42 @@ fun FoodBubble(modifier: Modifier = Modifier, food: Food) {
 
 
 @Composable
+fun WorkoutBubble(modifier: Modifier = Modifier, workout: Workout) {
+    Button(
+        onClick = {},//enable travelling to same focus screen todo
+        shape = RoundedCornerShape(size = 12.dp)
+    ) {
+        Row {
+            Text(
+                text = workout.workoutName,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = modifier.weight(1.5f))
+            Text(
+                text = "${workout.repetitions} repetitions",
+                style = MaterialTheme.typography.bodySmall
+            )
+
+        }
+
+    }
+}
+
+
+@Composable
+fun WorkoutsList(modifier: Modifier= Modifier, workoutsList: List<Workout>){
+    LazyColumn {
+        items(workoutsList){item->
+            WorkoutBubble(workout = item)
+        }
+    }
+}
+
+@Composable
 fun WorkoutViewScreen(modifier: Modifier = Modifier, DWVM: WeekDayViewModel) {
-    Box(modifier = modifier.fillMaxSize()) {
-        Text(text = "workouts")
+    Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = "workouts")//todo add set organization
+        WorkoutsList(workoutsList = DWVM.daySelected.workouts)
     }
 }
 

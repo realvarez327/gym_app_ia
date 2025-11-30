@@ -2,10 +2,9 @@ package com.example.gymappia.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.compose.ui.res.stringResource
+
 import androidx.core.content.edit
-import androidx.datastore.migrations.SharedPreferencesView
-import com.example.gymappia.R
+
 import com.example.gymappia.model.FitnessGoal
 import com.example.gymappia.model.Gender
 import com.google.gson.Gson
@@ -16,10 +15,12 @@ import kotlinx.coroutines.flow.StateFlow
 private const val SETTINGS_PREF_NAME = "userPreferences"
 private const val GOALS_KEY = "goals"
 private const val NAME_KEY = "name"
-
 private const val NOTIF_HOUR_KEY = "notifHour"
 private const val NOTIF_MINUTE_KEY = "notifMinute"
-
+private const val PROTEIN_KEY = "protein"
+private const val FAT_KEY = "fat"
+private const val SUGAR_KEY = "sugar"
+private const val CARBS_KEY = "carbs"
 private const val AGE_KEY = "age"
 private const val GENDER_KEY = "gender"
 private const val WEIGHT_KEY = "weight"
@@ -56,6 +57,7 @@ object UserSettingsRepository {
         sharedPreferences.edit {
             putString(GENDER_KEY,jsonVersion)
         }
+        _genderFlow.value = gender
     }
 
     fun loadGender():Gender{
@@ -73,6 +75,7 @@ object UserSettingsRepository {
         sharedPreferences.edit {
             putString(GOALS_KEY,jsonVer)
         }
+        _goalsFlow.value = goals
     }
 
     fun loadGoals(): List<FitnessGoal>{
@@ -115,13 +118,14 @@ object UserSettingsRepository {
         return sharedPreferences.getInt(NOTIF_MINUTE_KEY,0)
     }
 
-    private val _heightFlow = MutableStateFlow(loadAge())
-    val heightFlow: StateFlow<Int> = _heightFlow
+    private val _heightFlow = MutableStateFlow(loadHeight())
+    val heightFlow: StateFlow<Float> = _heightFlow
 
     fun putHeight(height: Float){
         sharedPreferences.edit{
-            putFloat(AGE_KEY,height)
+            putFloat(HEIGHT_KEY,height)
         }
+        _heightFlow.value = height
     }
     fun loadHeight():Float{
         return sharedPreferences.getFloat(HEIGHT_KEY,0.0f)
@@ -134,18 +138,20 @@ object UserSettingsRepository {
         sharedPreferences.edit{
             putInt(AGE_KEY,ageToPut)
         }
+        _ageFlow.value = ageToPut
     }
     fun loadAge():Int{
         return sharedPreferences.getInt(AGE_KEY,0)
     }
 
-    private val _weightFlow = MutableStateFlow(loadAge())
-    val weightFlow: StateFlow<Int> = _weightFlow
+    private val _weightFlow = MutableStateFlow(loadWeight())
+    val weightFlow: StateFlow<Float> = _weightFlow
 
     fun putWeight(weight: Float){
         sharedPreferences.edit{
             putFloat(WEIGHT_KEY,weight)
         }
+        _weightFlow.value = weight
     }
     fun loadWeight():Float{
         return sharedPreferences.getFloat(WEIGHT_KEY,0.0f)
@@ -158,9 +164,66 @@ object UserSettingsRepository {
         sharedPreferences.edit {
             putInt(CALORIES_KEY,cals)
         }
+        _dailyCaloriesFlow.value = cals
     }
 
     fun loadCalories():Int{
         return sharedPreferences.getInt(CALORIES_KEY,0)
+    }
+
+    private val _dailyProteinFlow = MutableStateFlow(loadProtein())
+    val dailyProteinFlow:StateFlow<Int> =_dailyProteinFlow
+
+    fun loadProtein():Int{
+       return sharedPreferences.getInt(PROTEIN_KEY, 0)
+    }
+
+    fun putProtein(given:Int){
+        sharedPreferences.edit {
+            putInt(PROTEIN_KEY,given)
+        }
+        _dailyProteinFlow.value = given
+    }
+
+    private val _dailySugarFlow =MutableStateFlow(loadDailySugar())
+    val dailySugarFlow:StateFlow<Int> = _dailySugarFlow
+
+    fun loadDailySugar():Int{
+        return sharedPreferences.getInt(SUGAR_KEY,0)
+    }
+
+    fun putDailySugar(given:Int){
+        sharedPreferences.edit{
+            putInt(SUGAR_KEY,given)
+        }
+        _dailySugarFlow.value=given
+    }
+
+
+    private val _dailyFatFlow = MutableStateFlow(loadDailyFat())
+    val dailyFatFlow = _dailyFatFlow
+    fun loadDailyFat():Int {
+        return sharedPreferences.getInt(FAT_KEY, 0)
+    }
+
+    fun putDailyFat(given:Int){
+        sharedPreferences.edit {
+            putInt(FAT_KEY,given)
+        }
+        _dailyFatFlow.value = given
+    }
+
+    private val _dailyCarbsFlow = MutableStateFlow(loadDailyCarbs())
+    val dailyCarbsFlow = _dailyCarbsFlow
+
+    fun loadDailyCarbs():Int {
+        return sharedPreferences.getInt(CARBS_KEY, 0)
+    }
+
+    fun putDailyCarbs(given:Int){
+        sharedPreferences.edit{
+            putInt(CARBS_KEY, given)
+        }
+        _dailyCarbsFlow.value = given
     }
 }

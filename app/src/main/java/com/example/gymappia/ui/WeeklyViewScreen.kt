@@ -29,6 +29,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.gymappia.AppScreen
 import com.example.gymappia.R
+import com.example.gymappia.data.UserSettingsRepository
 import com.example.gymappia.model.UserInitUiState
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -46,14 +47,11 @@ fun WeeklyViewScreen(
     Log.d("navigation", "weekly view screen loaded :)")
     Column(modifier = modifier.fillMaxSize()) {
         Text(
-            text = stringResource(R.string.welcome_user_to_week, UserInitUiState().userName),
+            text = stringResource(R.string.welcome_user_to_week, UserSettingsRepository.nameFlow),
             modifier = modifier.padding(4.dp),
             textAlign = TextAlign.Center
         )
-        val year = LocalDate.now().year
-        val month = LocalDate.now().month
-        val currentDayOfMonth = LocalDate.now().dayOfMonth
-        val today: LocalDate = LocalDate.of(year, month, currentDayOfMonth)
+        val today: LocalDate = dayToWeekVM.daySelected.date
         val tempAdj: TemporalAdjuster = TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)
         var iteratingDay = today.with(tempAdj)
 

@@ -15,7 +15,8 @@ class UserInitViewModel : ViewModel() {
 
     fun updateRepo(){
         val state = _uiInitState.value
-        UserSettingsRepository.updateGoals(state.goals?:listOf())
+        val goals = state.goals
+        UserSettingsRepository.updateGoals(goals?:listOf())
         UserSettingsRepository.changeName(state.userName)
         UserSettingsRepository.putAge(state.userAge?:0)
         UserSettingsRepository.putHeight(state.userHeight?:0.0f)
@@ -26,7 +27,7 @@ class UserInitViewModel : ViewModel() {
             &&(state.userHeight!=null)
             &&(state.userAge!=null)
             ){
-            var cals = (10* state.userWeight!!)+(6.25*state.userHeight!!) -(5*state.userAge!!)
+            var cals = (10* state.userWeight!!)+(6.25*state.userHeight!!) -(5*state.userAge!!)//currently only bmr, add question for activity level!
             when(state.gender){
                 Gender.Female -> {
                     cals-=161
@@ -35,7 +36,29 @@ class UserInitViewModel : ViewModel() {
                     cals +=5
                 }
             }
+           if(goals!=null){
+               if(goals.contains(FitnessGoal.LosingWeight)&&!(goals.contains(FitnessGoal.GainingWeight)||goals.contains(
+                       FitnessGoal.KeepWeight))){
+                   // if goals has losing weight and no user mistakes (keeping or gaining also pressed)
+                   cals-=500
+               }else if(goals.contains(FitnessGoal.GainingWeight)&&!(goals.contains(FitnessGoal.LosingWeight)||goals.contains(
+                       FitnessGoal.KeepWeight))){
+                   //sources say 350-500
+                   cals+=400
+               }
+           }
+            //todo add macrotracking later
+            //assuming that weight is kg
             UserSettingsRepository.putDailyCalories(cals.roundToInt())
+            UserSettingsRepository.putProtein((state.userWeight!!*2.2f).roundToInt())
+            UserSettingsRepository.putDailySugar(30)
+            //45 to 65 percent reccomended in cal form
+            UserSettingsRepository.putDailyCarbs((cals*0.5).roundToInt())
+            var fatToPut = 0.3*cals
+            if(state.userAge!!<3){
+                fatToPut=0.35*cals
+            }
+            UserSettingsRepository.putDailyFat(fatToPut.roundToInt())
         }
     }
 
