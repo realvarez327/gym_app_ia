@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,10 +18,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -49,36 +54,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.example.gymappia.R
 import com.example.gymappia.data.ExerciseApiResponse
 import com.example.gymappia.data.FoodProduct
-import com.example.gymappia.data.MealType
 import com.example.gymappia.data.NutrimentsInServing
+import com.example.gymappia.data.roomClasses.MealType
 
 import com.example.gymappia.model.AddItemViewModel
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import java.time.LocalDate
-
-enum class AddItemScreenNames(val navName: String) {
-    AddFood("add_food"),
-    AddWorkout("add_workout"),
-    FocusWorkout("focus_workout"),
-    FocusFood("focus_food")
-}
-
-
-
+import java.time.LocalDateTime
+import kotlin.math.exp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddFoodScreen(modifier: Modifier = Modifier, viewModel: AddItemViewModel = viewModel()) {
+fun AddFoodScreen(modifier: Modifier = Modifier, viewModel: AddItemViewModel = viewModel(), navigateToFoodFocus:(FoodProduct)->Unit) {
     val currentActivity = LocalActivity.current
 
     Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -88,7 +80,6 @@ fun AddFoodScreen(modifier: Modifier = Modifier, viewModel: AddItemViewModel = v
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             AddItemSearchBar(
-                modifier,
                 onSearch = { query -> viewModel.queryFoodSearch(query) },
                 hint = stringResource(R.string.add_food_search)
             )
@@ -110,14 +101,19 @@ fun AddFoodScreen(modifier: Modifier = Modifier, viewModel: AddItemViewModel = v
         }
         LazyColumn {
             items(viewModel.foodQuerySearchResponse) { food ->
-                Button(onClick = {}) {
-                    AsyncImage(
-                        model = food.image_url,
-                        placeholder = painterResource(R.drawable.image_not_found),
-                        contentDescription = food.product_name + " image"
-                    )
-                    Spacer(modifier = Modifier.size(4.dp))
-                    Text(text = food.product_name)
+                Button(onClick = {
+                    viewModel.selectedFood = food
+                    navigateToFoodFocus(food)
+                }) {
+                    Row {
+                        AsyncImage(
+                            model = food.image_url,
+                            placeholder = painterResource(R.drawable.image_not_found),
+                            contentDescription = food.product_name + " image"
+                        )
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text(text = food.product_name)
+                    }
                 }
 
             }
@@ -128,7 +124,7 @@ fun AddFoodScreen(modifier: Modifier = Modifier, viewModel: AddItemViewModel = v
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddItemSearchBar(modifier: Modifier = Modifier, onSearch: (String) -> Unit, hint: String) {
+fun AddItemSearchBar(onSearch: (String) -> Unit, hint: String) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
     Row {
         OutlinedTextField(
@@ -168,7 +164,6 @@ fun AddExerciseScreen(
             style = MaterialTheme.typography.headlineMedium
         )
         AddItemSearchBar(
-            modifier,
             onSearch = { query -> viewModel.exerciseSearch(query) },
             hint = stringResource(R.string.add_exercise_search)
         )
@@ -213,14 +208,16 @@ fun WorkoutFocusScreen(
                         )
                     }
 
-                    IconButton(onClick = {
-                        viewModel.insertWorkout(
+                    SmallFloatingActionButton(
+                        onClick = { viewModel.insertWorkout(
                             name = toShow.name,
                             reps = numberOfReps,
-                            day = LocalDate.now(),
-                            order = 2//todo add functionality
-                        )
-                    }) {
+                            day = LocalDateTime.now()
+                        ) },
+                        shape = shapes.small,
+                        containerColor = colorScheme.secondaryContainer,
+                        contentColor = colorScheme.secondary
+                    ) {
                         Icon(
                             imageVector = Icons.Outlined.Add,
                             contentDescription = "add workout"
@@ -279,8 +276,9 @@ fun FoodFocusScreen(
     ) {
 
         if (toShow != null) {
-            var textValue by rememberSaveable { mutableStateOf("") }
-            var number by rememberSaveable { mutableFloatStateOf(0.0f) }
+            var textValOfServing by rememberSaveable { mutableStateOf("") }
+            var numberValOfServing by rememberSaveable { mutableFloatStateOf(0.0f) }
+            var selectedMeal by rememberSaveable { mutableStateOf(MealType.Breakfast)}
             val calIn100 = toShow.nutrimentsPer100g.energy_kcal_100g
             val proteinIn100 = toShow.nutrimentsPer100g.proteins_100g
             val fatIn100 = toShow.nutrimentsPer100g.fat_100g
@@ -316,44 +314,66 @@ fun FoodFocusScreen(
                         .background(color = colorScheme.primaryContainer)
                 ) {
                     Row {
+                        var expanded by rememberSaveable {mutableStateOf(false) }
+                        Text("Meal: ")
+                        Box(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            IconButton(
+                                onClick = {expanded=!expanded}
+                            ) {
+                                Icon(Icons.Default.MoreVert, contentDescription = "Meal type options")
+                            }
+
+                            DropdownMenu(expanded = expanded, onDismissRequest = {expanded=false}) {
+                                MealType.entries.forEach {item->
+                                    DropdownMenuItem(
+                                        text = { Text(text=item.name) },
+                                        onClick = { selectedMeal = item }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Row {
                         Text("For serving size: ")
                         OutlinedTextField(
-                            value = textValue,
+                            value = textValOfServing,
                             onValueChange = {
-                                textValue = it
-                                number = textValue.toFloatOrNull() ?: 100.0f
+                                textValOfServing = it
+                                numberValOfServing = textValOfServing.toFloatOrNull() ?: 100.0f
                             }
                         )
                     }
-                    Text("Calories = ${(number * calIn100) / 100}")
-                    Text("Protein = ${(number * proteinIn100) / 100}")
-                    Text("Sugar = ${(number * sugarIn100) / 100}")
-                    Text("Carbs = ${(number * carbsIn100) / 100}")
-                    Text("Fat = ${(number * fatIn100) / 100}")
+                    Text("Calories = ${(numberValOfServing * calIn100) / 100}")
+                    Text("Protein = ${(numberValOfServing * proteinIn100) / 100}")
+                    Text("Sugar = ${(numberValOfServing * sugarIn100) / 100}")
+                    Text("Carbs = ${(numberValOfServing * carbsIn100) / 100}")
+                    Text("Fat = ${(numberValOfServing * fatIn100) / 100}")
 
                 }
             }
-            IconButton(
-                onClick = {
-                    addItemAddViewModel.insertFoodFromProduct(
-                        given = toShow,
-                        mealType = MealType.Breakfast,//todo add functionality
-                        day = LocalDate.now(),//todo add functionality
-                        order = 1,//todo add functionality
-                        serving = number,
-                        givenNutrimentsInServing = NutrimentsInServing(
-                            energyKcal = (number * calIn100) / 100,
-                            fat = (number * fatIn100) / 100,
-                            protein = (number * proteinIn100) / 100,
-                            sugar = (number * sugarIn100) / 100,
-                            carbs = (number * carbsIn100) / 100
-                        ),
+            SmallFloatingActionButton(
+                onClick = { addItemAddViewModel.insertFoodFromProduct(
+                    given = toShow,
+                    mealType =selectedMeal,
+                    day = LocalDateTime.now(),
+                    serving = numberValOfServing,
+                    givenNutrimentsInServing = NutrimentsInServing(
+                        energyKcal = (numberValOfServing * calIn100) / 100,
+                        fat = (numberValOfServing * fatIn100) / 100,
+                        protein = (numberValOfServing * proteinIn100) / 100,
+                        sugar = (numberValOfServing * sugarIn100) / 100,
+                        carbs = (numberValOfServing * carbsIn100) / 100
                     )
-                }
+                )},
+                shape = shapes.small,
+                containerColor = colorScheme.secondaryContainer,
+                contentColor = colorScheme.secondary
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Add,
-                    contentDescription = "Add food"
+                    contentDescription = "add food"
                 )
             }
         }
@@ -423,11 +443,6 @@ fun ItemFocusScreenPreview() {
     ItemFocusScreenPrev(type = ItemType.BarcodeFood)
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AddFoodScreenPreview() {
-    AddFoodScreen()
-}
 
 @Preview(showBackground = true)
 @Composable

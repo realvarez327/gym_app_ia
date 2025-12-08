@@ -34,7 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymappia.R
-import com.example.gymappia.data.MealType
+import com.example.gymappia.data.roomClasses.MealType
 import com.example.gymappia.model.Day
 import com.example.gymappia.model.Food
 import com.example.gymappia.model.Workout
@@ -161,7 +161,7 @@ fun FoodViewScreen(modifier: Modifier = Modifier, DWVM: WeekDayViewModel) {
 }
 
 @Composable
-fun MealFoodsList(modifier: Modifier = Modifier, mealList: List<Food>) {
+fun MealFoodsList(mealList: List<Food>) {
     LazyColumn {
         items(mealList) { item ->
             FoodBubble(food = item)
@@ -212,7 +212,7 @@ fun WorkoutBubble(modifier: Modifier = Modifier, workout: Workout) {
 
 
 @Composable
-fun WorkoutsList(modifier: Modifier= Modifier, workoutsList: List<Workout>){
+fun WorkoutsList(workoutsList: List<Workout>){
     LazyColumn {
         items(workoutsList){item->
             WorkoutBubble(workout = item)

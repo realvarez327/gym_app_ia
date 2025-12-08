@@ -6,8 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymappia.data.DataModelConverters
-import com.example.gymappia.data.FoodDao
-import com.example.gymappia.data.WorkoutDao
+import com.example.gymappia.data.roomClasses.DailyMetricsDao
+import com.example.gymappia.data.roomClasses.FoodDao
+import com.example.gymappia.data.roomClasses.WorkoutDao
 import com.example.gymappia.model.Day
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -16,13 +17,15 @@ import java.time.LocalDate
 
 class WeekDayViewModel(
     private val foodDao: FoodDao,
-    private val workoutDao: WorkoutDao
+    private val workoutDao: WorkoutDao,
+    private val dailyMetricsDao: DailyMetricsDao
 ) : ViewModel(){
+
 
     private val converters: DataModelConverters = DataModelConverters()
     init {
         generateWeek()
-        loadWeekFromDatabase()
+        setUpWeekInDatabase()
     }
     private fun generateWeek() {
         val today = LocalDate.now()
@@ -44,23 +47,16 @@ class WeekDayViewModel(
     val weekdays:List<Day>
         get() = _weekdays.value
 
-    fun loadWeekFromDatabase(){
+    fun setUpWeekInDatabase(){
         viewModelScope.launch {
-            val updatedDays = mutableListOf<Day>()
-            for (oldDay in _weekdays.value) {
-                val foods =
-                    converters.ListOfFoodEntityToListOfFood(foodDao.loadDaysFoods(oldDay.date))
-                val workouts = converters.ListOfWorkoutEntityToListOfWorkout(
-                    workoutDao.loadWorkoutsOfDay(oldDay.date)
-                )
-                val newDay = oldDay.copy(
-                    foods = foods,
-                    workouts = workouts
-                )
-                updatedDays.add(newDay)
-            }
-            _weekdays.value = updatedDays
+
         }
+    }
+
+    private fun weeklySetUp(){
+        val today = LocalDate.now()
+        val sunday = today.with(DayOfWeek.SUNDAY)
+
     }
 
 }

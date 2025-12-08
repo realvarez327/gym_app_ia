@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import com.example.gymappia.model.Progress
 import kotlin.math.PI
 import kotlin.math.sin
 import kotlin.math.tan
@@ -25,20 +26,54 @@ class ProgressGraphic {
         var degreeAmt = 0f
         Canvas(modifier = modifier.size(480.dp)) {
             val halfTriangleCenterAngle: Float= (((2*PI)/goalColors.size)/2).toFloat()
+            var progressAmt = 0.1f
             goalColors.forEach { color ->
 
                 //DrawSector(color = color, progressAmount = 2.0, rotationAmount = degreeAmt, canvasSize = 15f)
                 degreeAmt += 45f
                 drawSector(
                     drawScope =this,
-                    progressAmount = 0.3f,
+                    progressAmount = progressAmt,
                     rotationAmount = degreeAmt,
                     color = color,
                     triangleCenterAngleHalf = halfTriangleCenterAngle
                 )
+                progressAmt*=-1.05f
 
             }
         }
+
+
+
+
+    }
+
+    @Composable
+    fun RealDrawProgressGraphic(
+        progresses:List<Progress>,
+        modifier: Modifier = Modifier,
+
+        ) {
+        var degreeAmt = 0f
+        Canvas(modifier = modifier.size(480.dp)) {
+            val halfTriangleCenterAngle: Float= (((2*PI)/progresses.size)/2).toFloat()
+            var progressAmt = 0.1f
+            progresses.forEach { progressGiven ->
+
+                //DrawSector(color = color, progressAmount = 2.0, rotationAmount = degreeAmt, canvasSize = 15f)
+                degreeAmt += 45f
+                realDrawSector(
+                    drawScope =this,
+                    progress = progressGiven,
+                    rotationAmount = degreeAmt,
+                    triangleCenterAngleHalf = halfTriangleCenterAngle
+                )
+                progressAmt*=-1.05f
+
+            }
+        }
+
+
 
 
     }
@@ -66,6 +101,30 @@ class ProgressGraphic {
                path.close()
                drawPath(path = path, color =color, alpha = 0.5f)
            }
+        }
+
+    }
+
+    fun realDrawSector(
+        progress: Progress,
+        rotationAmount: Float = 0f,
+        drawScope: DrawScope,
+        triangleCenterAngleHalf: Float
+    ) {
+
+        with(drawScope){
+            rotate(degrees = rotationAmount){
+                val path = Path()
+                val size = drawScope.size
+                val height =(size.width*0.9F)*progress.progressAmt;
+                val distanceFromCenterLine = height* tan(triangleCenterAngleHalf)
+                path.moveTo(size.width*0.5f, size.height*0.5f)
+                path.lineTo(size.width*0.5f + height, ((size.height*0.5f)-distanceFromCenterLine))
+                path.lineTo(size.width*0.5f + height, ((size.height*0.5f)+distanceFromCenterLine))
+                path.lineTo(size.width*0.5f, size.height*0.5f)
+                path.close()
+                drawPath(path = path, color =progress.color, alpha = 0.5f)
+            }
         }
 
     }

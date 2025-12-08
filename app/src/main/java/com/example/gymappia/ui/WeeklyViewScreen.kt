@@ -27,7 +27,6 @@ import com.example.gymappia.data.UserSettingsRepository
 import com.example.gymappia.model.Day
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeeklyViewScreen(
@@ -42,14 +41,14 @@ fun WeeklyViewScreen(
             modifier = modifier.padding(4.dp),
             textAlign = TextAlign.Center
         )
-        dayToWeekVM.weekdays.forEach {day ->
+        dayToWeekVM.weekdays.forEach { day ->
             DayPreview(
                 modifier = modifier,
-                goToDay = {day ->
+                goToDay = { day ->
                     dayToWeekVM.daySelected = day
                     goToDay()
                 },
-                dayWeekVM=dayToWeekVM,
+                dayWeekVM = dayToWeekVM,
                 day = day
             )
         }
@@ -61,9 +60,9 @@ fun DayPreview(
     modifier: Modifier = Modifier,
     goToDay: (Day) -> Unit,
     dayWeekVM: WeekDayViewModel,
-    day:Day
+    day: Day
 ) {
-    val containerBg: Color = if (dayWeekVM.daySelected==day) {
+    val containerBg: Color = if (dayWeekVM.daySelected == day) {
         MaterialTheme.colorScheme.tertiaryContainer
     } else {
         MaterialTheme.colorScheme.secondaryContainer
@@ -94,17 +93,8 @@ fun DayPreview(
         Column(
             modifier = modifier.padding(4.dp)
         ) {
-            ProgressGraphic().DrawProgressGraphic(
-                goalColors = listOf(
-                    Color.Red,
-                    Color.Magenta,
-                    Color.Blue,
-                    Color.Cyan,
-                    Color.Yellow,
-                    Color.Green,
-                    Color.DarkGray,
-                    Color.Black
-                ),
+            ProgressGraphic().RealDrawProgressGraphic(
+                progresses = day.progressInGoals,
                 modifier = modifier
                     .size(60.dp)
                     .background(color = containerBg)
@@ -120,6 +110,6 @@ fun WeeklyViewScreenPreview(modifier: Modifier = Modifier) {
     WeeklyViewScreen(
         modifier,
         dayToWeekVM = viewModel(),
-        goToDay = {  }
+        goToDay = { }
     )
 }

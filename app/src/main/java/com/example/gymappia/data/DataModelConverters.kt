@@ -1,5 +1,8 @@
 package com.example.gymappia.data
 
+import com.example.gymappia.data.roomClasses.FoodEntity
+import com.example.gymappia.data.roomClasses.WorkoutEntity
+import com.example.gymappia.model.Day
 import com.example.gymappia.model.Food
 import com.example.gymappia.model.Workout
 
@@ -7,35 +10,31 @@ class DataModelConverters {
     fun FoodEntityToFood(given: FoodEntity):Food{
         val created = Food(
             foodName = given.foodName,
-            calsPer = given.nutrimentsInServing.energyKcal,
-            protein = given.nutrimentsInServing.protein,
-            fat = given.nutrimentsInServing.fat,
+            calsPer = given.caloriesInServing,
+            protein = given.proteinInServing,
+            fat = given.fatInServing,
             servingSize = given.servingSize,
-            carbs = given.nutrimentsInServing.carbs,
-            sugar = given.nutrimentsInServing.sugar,
-            orderInDay = given.orderInDay,
+            carbs = given.carbsInServing,
+            sugar = given.sugarInServing,
             mealType = given.mealType,
-            day = given.dayOfConsumption,
+            dayTime = given.consumptionDateTime,
             imageUrl = given.imageUrl
         )
         return created
     }
 
-    fun FoodToFoodEntity(given:Food): FoodEntity{
+    fun FoodToFoodEntity(given:Food): FoodEntity {
         val created = FoodEntity(
-            orderInDay =given.orderInDay,
             mealType = given.mealType,
             servingSize = given.servingSize,
             foodName = given.foodName,
-            nutrimentsInServing = NutrimentsInServing(
-                energyKcal = given.calsPer,
-                fat = given.fat,
-                protein = given.protein,
-                sugar = given.sugar,
-                carbs = given.carbs
-            ),
             imageUrl = given.imageUrl,
-            dayOfConsumption = given.day
+            consumptionDateTime = given.dayTime,
+            proteinInServing = given.protein,
+            carbsInServing = given.carbs,
+            fatInServing = given.fat,
+            sugarInServing = given.sugar,
+            caloriesInServing = given.calsPer,
         )
         return created
     }
@@ -52,8 +51,7 @@ class DataModelConverters {
         val toReturn = Workout(
             workoutName = given.exerciseName,
             repetitions = given.repetitions,
-            orderInDay = given.workoutOrderInDay,
-            parentDay = given.dayOfWorkout
+            parentDay = given.dayOfWorkout.toLocalDate()
         )
         return toReturn
     }
@@ -65,4 +63,6 @@ class DataModelConverters {
         }
         return toReturn.toList()
     }
+
+
 }

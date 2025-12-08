@@ -8,15 +8,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymappia.data.ExerciseApiClient
 import com.example.gymappia.data.ExerciseApiResponse
 import com.example.gymappia.data.FoodApiClient
-import com.example.gymappia.data.FoodDao
-import com.example.gymappia.data.FoodEntity
+import com.example.gymappia.data.roomClasses.FoodDao
+import com.example.gymappia.data.roomClasses.FoodEntity
 import com.example.gymappia.data.FoodProduct
-import com.example.gymappia.data.MealType
+import com.example.gymappia.data.roomClasses.MealType
 import com.example.gymappia.data.NutrimentsInServing
-import com.example.gymappia.data.WorkoutDao
-import com.example.gymappia.data.WorkoutEntity
+import com.example.gymappia.data.roomClasses.WorkoutDao
+import com.example.gymappia.data.roomClasses.WorkoutEntity
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class AddItemViewModel (
     private val foodDao: FoodDao,
@@ -96,19 +97,21 @@ class AddItemViewModel (
     fun insertFoodFromProduct(
         given: FoodProduct,
         mealType: MealType,
-        day: LocalDate,
-        order: Int,
+        day: LocalDateTime,
         serving: Float,
         givenNutrimentsInServing: NutrimentsInServing
     ) {
         val toInsert: FoodEntity = FoodEntity(
-            orderInDay = order,
             mealType = mealType,
             servingSize = serving,
             foodName = given.product_name,
-            nutrimentsInServing = givenNutrimentsInServing,
             imageUrl = given.image_url?:"",
-            dayOfConsumption = day
+            consumptionDateTime = day,
+            proteinInServing = givenNutrimentsInServing.protein,
+            carbsInServing = givenNutrimentsInServing.carbs,
+            fatInServing = givenNutrimentsInServing.fat,
+            sugarInServing = givenNutrimentsInServing.sugar,
+            caloriesInServing = givenNutrimentsInServing.energyKcal
         )
         viewModelScope.launch {
             foodDao.addFood(toInsert)
@@ -119,11 +122,9 @@ class AddItemViewModel (
     fun insertWorkout(
         name:String,
         reps: Int,
-        day: LocalDate,
-        order: Int
+        day: LocalDateTime
     ){
         val toInsert: WorkoutEntity= WorkoutEntity(
-            workoutOrderInDay = order,
             exerciseName = name,
             dayOfWorkout = day,
             repetitions = reps

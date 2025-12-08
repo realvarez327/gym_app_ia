@@ -8,7 +8,8 @@ import java.time.format.DateTimeFormatter
 data class Day(
     val date: LocalDate,
     val foods: List<Food> =emptyList(),
-    val workouts: List<Workout> = emptyList()
+    val workouts: List<Workout> = emptyList(),
+    val progressInGoals:List<Progress> = emptyList()
 ) {
     val prettyDate : String
         get() {

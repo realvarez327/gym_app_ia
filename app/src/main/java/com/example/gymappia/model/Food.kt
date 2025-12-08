@@ -1,8 +1,9 @@
 package com.example.gymappia.model
 
 
-import com.example.gymappia.data.MealType
+import com.example.gymappia.data.roomClasses.MealType
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class Food(
     val foodName: String,
@@ -12,9 +13,8 @@ class Food(
     var servingSize: Float,
     var carbs:Float,
     var sugar:Float,
-    var orderInDay: Int,
     var mealType: MealType,
-    var day: LocalDate,
+    var dayTime: LocalDateTime,
     val imageUrl:String?
 )
 

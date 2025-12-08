@@ -209,7 +209,8 @@ fun GymApp() {
                         modifier = Modifier
                             .fillMaxSize()
                             .background(color = colorScheme.background),
-                        viewModel = addFoodVM
+                        viewModel = addFoodVM,
+                        navigateToFoodFocus = { navController.navigate(AppScreen.AddFoodFocus.name) }
                     )
                 }
 

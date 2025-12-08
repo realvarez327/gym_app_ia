@@ -1,22 +1,24 @@
-package com.example.gymappia.data
+package com.example.gymappia.data.roomClasses
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-
+import com.example.gymappia.data.roomClasses.WorkoutDao
+import com.example.gymappia.data.roomClasses.WorkoutEntity
 
 @Database(entities = [
     WorkoutEntity::class,
-    FoodEntity::class
-                     ], version = 1, exportSchema = false)
+    FoodEntity::class,
+    DailyMetricsEntity::class], version = 1, exportSchema = false)
 @TypeConverters(
     ConvertersForRoom::class
 )
 abstract class HealthDatabase : RoomDatabase() {
     abstract fun exerciseDao(): WorkoutDao
     abstract fun foodDao(): FoodDao
+    abstract fun dailyMetricsDao(): DailyMetricsDao
 
     companion object {
         @Volatile
@@ -27,7 +29,7 @@ abstract class HealthDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     HealthDatabase::class.java,
-                    "exercise_database"//database file name
+                    "health_database"//database file name
                 ).build()
                 INSTANCE = instance
                 return instance

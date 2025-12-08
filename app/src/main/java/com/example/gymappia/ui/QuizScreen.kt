@@ -48,7 +48,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import com.example.gymappia.data.QuestionsDataSource
 import com.example.gymappia.model.FitnessGoal
 import com.example.gymappia.model.Gender
@@ -159,11 +158,10 @@ fun SingleChoiceSection(
     question: Question.SingleChooseQuestion,
     viewModel: UserInitViewModel,
 ) {
+    //store gender
+    var selectedGender: Gender by rememberSaveable { mutableStateOf(Gender.Female) }
     Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         QuestionTitle(question)
-        //store gender
-        var selectedGender: Gender by rememberSaveable { mutableStateOf(Gender.Female) }
-
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = modifier.padding(8.dp),
@@ -174,13 +172,15 @@ fun SingleChoiceSection(
             items(items = question.possibleAnswerChoices) { choice ->
                 if (choice is Gender) {
                     Log.d("gender q", "choice I need to show is a Gender and it is $choice")
-                    ChoiceBubble(
+                    SingleSelectChoiceBubble<Gender>(
                         stringToShow = stringResource(choice.stringId),
                         onClick = {
-                            selectedGender = choice
+                          selectedGender = choice;
                         },
-                        isSingleSelect = true
+                        selectedOption = selectedGender,
+                        myOption = choice
                     )
+
                 }
             }
 
@@ -199,7 +199,7 @@ fun SingleChoiceSection(
 
 
 @Composable
-fun InputNumberSection(//todo make it possible to dropdown specific units
+fun InputNumberSection(
     question: Question.NumberResponseQuestion,
     viewModel: UserInitViewModel,
     @StringRes unitStringResource: Int,
@@ -243,8 +243,7 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
         }
         NextButton(alsoOnclick = {
             number = textValue.toFloatOrNull() ?: 0.0f
-            textValue =
-                ""//todo eventually make it so that the val for each q is saved, so that user can edit past question answers in quiz
+            textValue = ""
             when (question.numberQuestionSubject) {
                 NumberQuestionSubject.Weight -> {
                     viewModel.updateUserWeight(number)
@@ -266,22 +265,23 @@ fun InputNumberSection(//todo make it possible to dropdown specific units
     }
 }
 
-//todo make it so that only one choice selects at a time for gender
+
 @Composable
-fun ChoiceBubble(
+fun <T>SingleSelectChoiceBubble(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     stringToShow: String,
-    isSingleSelect:Boolean
+    selectedOption:T,
+    myOption:T
 ) {
-    var selected by rememberSaveable { mutableStateOf(false) }
+    //var selected by rememberSaveable { mutableStateOf(myOption==selectedOption) }
+    val selected = (selectedOption==myOption)
 
     Button(
         shape = RoundedCornerShape(36.dp),
         modifier = modifier,
         onClick = {
             onClick()
-            selected = !selected
         },
         colors = ButtonDefaults.buttonColors(
             containerColor = if(selected){
@@ -297,18 +297,37 @@ fun ChoiceBubble(
     }
 }
 
+
+
 @Composable
-fun GoalChoiceOptionBubble(
-    goal: FitnessGoal,
-    onclick: () -> Unit,
-    modifier: Modifier = Modifier
+fun MultiSelectChoiceBubble(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    stringToShow: String,
+    initialSelected: Boolean
 ) {
-    ChoiceBubble(
-        onClick = onclick,
-        stringToShow = goal.message,
+    var selected by rememberSaveable { mutableStateOf(initialSelected)}
+
+
+    Button(
+        shape = RoundedCornerShape(36.dp),
         modifier = modifier,
-        isSingleSelect = false
-    )
+        onClick = {
+            selected = !selected
+            onClick()
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if(selected){
+                colorScheme.inversePrimary
+            }else{
+                colorScheme.primary
+            }
+        )
+    ) {
+        Text(
+            text = stringToShow
+        )
+    }
 }
 
 
@@ -359,9 +378,8 @@ fun MultipleChoiceScreen(
             if (possibleGoals != null) {
                 items(count = possibleGoals.size) { index ->
                     val currentItem = possibleGoals[index]
-                    GoalChoiceOptionBubble(
-                        goal = currentItem,
-                        onclick = {
+                    MultiSelectChoiceBubble(
+                        onClick = {
                             if (goals.contains(currentItem)) {
                                 //found
                                 goals.remove(currentItem)
@@ -369,7 +387,9 @@ fun MultipleChoiceScreen(
                                 //not found
                                 goals.add(currentItem)
                             }
-                        }
+                        },
+                        stringToShow = currentItem.name,
+                        initialSelected = false
                     )
                 }
             }
@@ -428,8 +448,7 @@ fun QuizScreenPreview() {
             modifier = Modifier.fillMaxSize(),
             userInitViewModel = viewModel(),
             quizHandlerGiven = QuizHandler(
-                endQuizFunction = { Log.e("quiz Info", "quiz ended") },
-                externalNavController = rememberNavController()
+                endQuizFunction = { Log.e("quiz Info", "quiz ended") }
             ),
         )
     }
