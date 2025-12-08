@@ -415,14 +415,14 @@ fun NextButton(alsoOnclick: () -> Unit, modifier: Modifier = Modifier) {
     Button(
         onClick = {
             Log.d("nextQuiz", "Next button was clicked")
-
+            alsoOnclick()
             if (quizHandler.nextQuestion() == -1) {
                 Log.d("navigation", "no next question! will try to move on")
-
+                    quizHandler.endQuizFunction()
                 Log.d("navigation", "got past end quiz function call")
 
             }
-            alsoOnclick()
+
             Log.d("nextQuiz", "also on click executed")
         },
         modifier = modifier

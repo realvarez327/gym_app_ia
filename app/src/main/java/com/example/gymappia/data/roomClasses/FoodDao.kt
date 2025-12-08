@@ -11,8 +11,8 @@ import java.time.LocalDateTime
 
 @Dao
 interface FoodDao {
-    @Query("SELECT * FROM foods WHERE date_time_eaten =:givenDay")
-    suspend fun loadDaysFoods(givenDay: LocalDateTime): List<FoodEntity>
+    @Query("SELECT * FROM foods WHERE date_time_eaten BETWEEN :beginOfDay AND :endOfDay")
+    suspend fun loadDaysFoods(beginOfDay:Long, endOfDay:Long): List<FoodEntity>
 
     @Query("SELECT * FROM foods WHERE date_time_eaten=:givenDay AND parent_meal_type=:givenMealType")
     suspend fun loadFoodByMealType(givenDay: LocalDateTime, givenMealType: MealType): List<FoodEntity>

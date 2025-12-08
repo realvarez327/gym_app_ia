@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import com.example.gymappia.data.UserSettingsRepository
 
 class DailyNotifWorker (appContext: Context, params:WorkerParameters): Worker(appContext,params){
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -24,6 +25,13 @@ class DailyNotifWorker (appContext: Context, params:WorkerParameters): Worker(ap
             Log.e("notifSendingWorker", "no clue what problem, but mess up")
             return Result.failure()
         }
+        NotifScheduler.scheduleDailyNotif(
+            context = applicationContext,
+            hour = UserSettingsRepository.hourFlow.value,
+            minute = UserSettingsRepository.minuteFlow.value
+        )
+
+
         return Result.success()
     }
 

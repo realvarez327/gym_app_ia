@@ -3,6 +3,7 @@ package com.example.gymappia.data.roomClasses
 import androidx.room.TypeConverter
 import com.example.gymappia.data.roomClasses.MealType
 import com.example.gymappia.data.NutrimentsInServing
+import com.example.gymappia.model.DailyMetricType
 import com.example.gymappia.model.Food
 import com.example.gymappia.model.Workout
 import com.google.gson.Gson
@@ -41,6 +42,18 @@ class ConvertersForRoom {
         return Instant.ofEpochMilli(given).atZone(ZoneId.systemDefault()).toLocalDateTime()
     }
 
+    @TypeConverter
+    fun fromDailyMetricType(type: DailyMetricType?):String?{
+        return type?.name
+
+    }
+
+    @TypeConverter
+    fun fromStringToMetricType(str:String?): DailyMetricType?{
+        return str?.let {string ->
+            DailyMetricType.valueOf(string)
+        }
+    }
 
     @TypeConverter
     fun fromMealTypeToString(meal: MealType?):String?{

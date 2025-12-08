@@ -9,7 +9,7 @@ data class Day(
     val date: LocalDate,
     val foods: List<Food> =emptyList(),
     val workouts: List<Workout> = emptyList(),
-    val progressInGoals:List<Progress> = emptyList()
+    val progressInGoals:List<DailyMetrics> = emptyList()
 ) {
     val prettyDate : String
         get() {

@@ -11,8 +11,8 @@ import java.time.LocalDateTime
 @Dao
 interface
 WorkoutDao {
-    @Query("SELECT * FROM workouts WHERE workout_date_time = :day")
-    suspend fun loadWorkoutsOfDay(day: LocalDateTime): List<WorkoutEntity>
+    @Query("SELECT * FROM workouts WHERE workout_date_time BETWEEN :startOfDay AND :endOfDay")
+    suspend fun loadWorkoutsOfDay(startOfDay:Long, endOfDay:Long): List<WorkoutEntity>
 
     @Insert
     suspend fun addWorkout(workout: WorkoutEntity)

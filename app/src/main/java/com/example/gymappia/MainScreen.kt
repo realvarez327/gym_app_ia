@@ -30,15 +30,22 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.navigation
+import com.example.gymappia.data.roomClasses.DailyMetricsDao
+import com.example.gymappia.data.roomClasses.FoodDao
+import com.example.gymappia.data.roomClasses.HealthDatabase
+import com.example.gymappia.data.roomClasses.WorkoutDao
 import com.example.gymappia.model.AddItemViewModel
+import com.example.gymappia.model.AddItemViewModelFactory
 import com.example.gymappia.model.QuizHandler
 import com.example.gymappia.ui.AddExerciseScreen
 import com.example.gymappia.ui.AddFoodScreen
 import com.example.gymappia.ui.DailyViewScreen
 import com.example.gymappia.ui.SettingsOverviewScreen
 import com.example.gymappia.model.UserInitViewModel
+import com.example.gymappia.model.WeekDayViewModelFactory
 import com.example.gymappia.ui.FoodFocusScreen
 import com.example.gymappia.ui.GoalsManagingScreen
 import com.example.gymappia.ui.NotifTimeManagingScreen
@@ -148,6 +155,19 @@ fun GymApp() {
         val addFoodGraphName = "add_food_graph"
         val addExerciseGraphName = "add_exercise_graph"
         val settingsGraphName = "setting_graph"
+
+        val context = LocalContext.current.applicationContext
+        val db = HealthDatabase.getDatabase(context)
+        val weekDayViewModelFactory = WeekDayViewModelFactory(
+            foodDao = db.foodDao(),
+            workoutDao = db.exerciseDao(),
+            dailyMetricsDao = db.dailyMetricsDao()
+        )
+        val addItemViewModelFactory = AddItemViewModelFactory(
+            foodDao = db.foodDao(),
+            workoutDao = db.exerciseDao()
+        )
+
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
@@ -182,7 +202,8 @@ fun GymApp() {
                     val parentEntry = remember(entry) {
                         navController.getBackStackEntry("week_graph")
                     }
-                    val dayWeekVM: WeekDayViewModel = viewModel(parentEntry)
+
+                    val dayWeekVM: WeekDayViewModel = viewModel(parentEntry, factory = weekDayViewModelFactory)
                     WeeklyViewScreen(
                         modifier = Modifier.background(color = colorScheme.background),
                         dayToWeekVM = dayWeekVM,
@@ -194,7 +215,8 @@ fun GymApp() {
                     val parentEntry = remember(entry) {
                         navController.getBackStackEntry("week_graph")
                     }
-                    val dayWeekVM: WeekDayViewModel = viewModel(parentEntry)
+
+                    val dayWeekVM: WeekDayViewModel = viewModel(parentEntry, factory = weekDayViewModelFactory)
                     DailyViewScreen(day = dayWeekVM.daySelected, dayWeekVM = dayWeekVM)
                 }
             }
@@ -204,7 +226,7 @@ fun GymApp() {
                     val parentEntry  = remember (entry){
                         navController.getBackStackEntry(addFoodGraphName)
                     }
-                    val addFoodVM: AddItemViewModel = viewModel(parentEntry)
+                    val addFoodVM: AddItemViewModel = viewModel(parentEntry, factory = addItemViewModelFactory)
                     AddFoodScreen(
                         modifier = Modifier
                             .fillMaxSize()
@@ -218,7 +240,7 @@ fun GymApp() {
                     val parentEntry  = remember (entry){
                         navController.getBackStackEntry(addFoodGraphName)
                     }
-                    val addFoodVM: AddItemViewModel = viewModel(parentEntry)
+                    val addFoodVM: AddItemViewModel = viewModel(parentEntry, factory = addItemViewModelFactory)
                     FoodFocusScreen(
                         toShow = addFoodVM.selectedFood,
                         addItemAddViewModel = addFoodVM
@@ -231,7 +253,7 @@ fun GymApp() {
                     val parentEntry = remember (entry){
                         navController.getBackStackEntry(addExerciseGraphName)
                     }
-                    val addExerciseVM: AddItemViewModel = viewModel(parentEntry)
+                    val addExerciseVM: AddItemViewModel = viewModel(parentEntry, factory = addItemViewModelFactory)
                     AddExerciseScreen(
                         modifier = Modifier
                             .fillMaxSize()
@@ -244,7 +266,7 @@ fun GymApp() {
                     val parentEntry = remember (entry){
                         navController.getBackStackEntry(addExerciseGraphName)
                     }
-                    val addExerciseVM: AddItemViewModel = viewModel(parentEntry)
+                    val addExerciseVM: AddItemViewModel = viewModel(parentEntry, factory = addItemViewModelFactory)
                     WorkoutFocusScreen(
                         viewModel = addExerciseVM,
                         toShow = addExerciseVM.selectedWorkout

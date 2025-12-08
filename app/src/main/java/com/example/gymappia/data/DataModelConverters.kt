@@ -1,7 +1,9 @@
 package com.example.gymappia.data
 
+import com.example.gymappia.data.roomClasses.DailyMetricsEntity
 import com.example.gymappia.data.roomClasses.FoodEntity
 import com.example.gymappia.data.roomClasses.WorkoutEntity
+import com.example.gymappia.model.DailyMetrics
 import com.example.gymappia.model.Day
 import com.example.gymappia.model.Food
 import com.example.gymappia.model.Workout
@@ -51,9 +53,25 @@ class DataModelConverters {
         val toReturn = Workout(
             workoutName = given.exerciseName,
             repetitions = given.repetitions,
-            parentDay = given.dayOfWorkout.toLocalDate()
+            parentDay = given.dayOfWorkout
         )
         return toReturn
+    }
+
+    fun WorkoutEntityListToWorkout(given:List<WorkoutEntity>): List<Workout>{
+        var toReturn: MutableList<Workout> = mutableListOf()
+        for(item in given){
+            toReturn.add(WorkoutEntityToWorkout(item))
+        }
+        return toReturn.toList()
+    }
+
+    fun WorkoutToWorkoutEntity(given: Workout): WorkoutEntity{
+        return WorkoutEntity(
+            exerciseName = given.workoutName,
+            dayOfWorkout = given.parentDay,
+            repetitions = given.repetitions
+        )
     }
 
     fun ListOfWorkoutEntityToListOfWorkout(given:List<WorkoutEntity>):List<Workout>{
@@ -64,5 +82,28 @@ class DataModelConverters {
         return toReturn.toList()
     }
 
+    fun DailyMetricsToDailyMetricsEntity(given: DailyMetrics): DailyMetricsEntity{
+        return DailyMetricsEntity(
+            metricName = given.dailyMetricName,
+            progressAmount = given.progressAmt,
+            dateAndTime = given.day
+        )
+    }
+
+    fun DailyMetricsEntityToDailyMetrics(given: DailyMetricsEntity): DailyMetrics{
+        return DailyMetrics(
+            progressAmt = given.progressAmount,
+            dailyMetricName = given.metricName,
+            day = given.dateAndTime
+        )
+    }
+
+    fun ListOfDailyMetricsEntitiesToListOfDailyMetrics(given:List<DailyMetricsEntity>):List<DailyMetrics>{
+        var toReturn: MutableList<DailyMetrics> = mutableListOf()
+        for(item in given){
+            toReturn.add(DailyMetricsEntityToDailyMetrics(item))
+        }
+        return toReturn.toList()
+    }
 
 }

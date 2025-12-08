@@ -10,9 +10,8 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import com.example.gymappia.model.Progress
+import com.example.gymappia.model.DailyMetrics
 import kotlin.math.PI
-import kotlin.math.sin
 import kotlin.math.tan
 
 
@@ -50,7 +49,7 @@ class ProgressGraphic {
 
     @Composable
     fun RealDrawProgressGraphic(
-        progresses:List<Progress>,
+        progresses:List<DailyMetrics>,
         modifier: Modifier = Modifier,
 
         ) {
@@ -106,7 +105,7 @@ class ProgressGraphic {
     }
 
     fun realDrawSector(
-        progress: Progress,
+        progress: DailyMetrics,
         rotationAmount: Float = 0f,
         drawScope: DrawScope,
         triangleCenterAngleHalf: Float
@@ -123,7 +122,7 @@ class ProgressGraphic {
                 path.lineTo(size.width*0.5f + height, ((size.height*0.5f)+distanceFromCenterLine))
                 path.lineTo(size.width*0.5f, size.height*0.5f)
                 path.close()
-                drawPath(path = path, color =progress.color, alpha = 0.5f)
+                drawPath(path = path, color =progress.dailyMetricName.color, alpha = 0.5f)
             }
         }
 
