@@ -15,5 +15,6 @@ enum class DailyMetricType (val color: Color){
     Protein(color =Color.Red),
     Sugar(color = Color.Blue),
     Fat(color =Color.Cyan),
-    Carbs(color = Color.Yellow)
+    Carbs(color = Color.Yellow),
+    Calories (color = Color.Green)
 }

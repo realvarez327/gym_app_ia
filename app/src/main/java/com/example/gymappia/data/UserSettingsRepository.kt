@@ -171,7 +171,7 @@ object UserSettingsRepository {
         return sharedPreferences.getFloat(WEIGHT_KEY,0.0f)
     }
 
-    private val _dailyCaloriesFlow = MutableStateFlow(0)
+    private val _dailyCaloriesFlow = MutableStateFlow(1)
     val dailyCaloriesFlow: StateFlow<Int> = _dailyCaloriesFlow
 
     fun putDailyCalories(cals:Int){
@@ -182,14 +182,14 @@ object UserSettingsRepository {
     }
 
     fun loadCalories():Int{
-        return sharedPreferences.getInt(CALORIES_KEY,0)
+        return sharedPreferences.getInt(CALORIES_KEY,1)
     }
 
-    private val _dailyProteinFlow = MutableStateFlow(0)
+    private val _dailyProteinFlow = MutableStateFlow(1)
     val dailyProteinFlow:StateFlow<Int> =_dailyProteinFlow
 
     fun loadProtein():Int{
-       return sharedPreferences.getInt(PROTEIN_KEY, 0)
+       return sharedPreferences.getInt(PROTEIN_KEY, 1)
     }
 
     fun putProtein(given:Int){
@@ -199,11 +199,11 @@ object UserSettingsRepository {
         _dailyProteinFlow.value = given
     }
 
-    private val _dailySugarFlow =MutableStateFlow(0)
+    private val _dailySugarFlow =MutableStateFlow(1)
     val dailySugarFlow:StateFlow<Int> = _dailySugarFlow
 
     fun loadDailySugar():Int{
-        return sharedPreferences.getInt(SUGAR_KEY,0)
+        return sharedPreferences.getInt(SUGAR_KEY,1)
     }
 
     fun putDailySugar(given:Int){
@@ -214,10 +214,10 @@ object UserSettingsRepository {
     }
 
 
-    private val _dailyFatFlow = MutableStateFlow(0)
+    private val _dailyFatFlow = MutableStateFlow(1)
     val dailyFatFlow = _dailyFatFlow
     fun loadDailyFat():Int {
-        return sharedPreferences.getInt(FAT_KEY, 0)
+        return sharedPreferences.getInt(FAT_KEY, 1)
     }
 
     fun putDailyFat(given:Int){
@@ -227,11 +227,11 @@ object UserSettingsRepository {
         _dailyFatFlow.value = given
     }
 
-    private val _dailyCarbsFlow = MutableStateFlow(0)
+    private val _dailyCarbsFlow = MutableStateFlow(1)
     val dailyCarbsFlow = _dailyCarbsFlow
 
     fun loadDailyCarbs():Int {
-        return sharedPreferences.getInt(CARBS_KEY, 0)
+        return sharedPreferences.getInt(CARBS_KEY, 1)
     }
 
     fun putDailyCarbs(given:Int){

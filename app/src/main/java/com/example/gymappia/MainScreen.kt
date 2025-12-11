@@ -29,10 +29,14 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.navigation
+import com.example.gymappia.data.UserSettingsRepository
 import com.example.gymappia.data.roomClasses.DailyMetricsDao
 import com.example.gymappia.data.roomClasses.FoodDao
 import com.example.gymappia.data.roomClasses.HealthDatabase
@@ -53,20 +57,19 @@ import com.example.gymappia.ui.PreferencesManagingScreen
 import com.example.gymappia.ui.WeekDayViewModel
 import com.example.gymappia.ui.WeeklyViewScreen
 import com.example.gymappia.ui.WorkoutFocusScreen
+import java.time.LocalDateTime
 
 enum class AppScreen(@StringRes val id: Int) {
-    Start(id = R.string.app_name),
-    Quiz(id = R.string.quiz),
-    DailyView(id = R.string.daily),
-    WeeklyView(id = R.string.weekly_view),
-    AddFoodSearch(id = R.string.add_food_search),
-    AddExerciseSearch(id = R.string.add_exercise_search),
-    Settings(id = R.string.settings_title),
-    AddFoodFocus(id =R.string.add_food ),
-    AddExerciseFocus(id= R.string.add_exercise),
-    Preferences(id = R.string.preferences),
-    Notifications(id = R.string.notifTimeControl),
-    Goals(id = R.string.goals)
+    Start(id = R.string.app_name), Quiz(id = R.string.quiz), DailyView(id = R.string.daily), WeeklyView(
+        id = R.string.weekly_view
+    ),
+    AddFoodSearch(id = R.string.add_food_search), AddExerciseSearch(id = R.string.add_exercise_search), Settings(
+        id = R.string.settings_title
+    ),
+    AddFoodFocus(id = R.string.add_food), AddExerciseFocus(id = R.string.add_exercise), Preferences(
+        id = R.string.preferences
+    ),
+    Notifications(id = R.string.notifTimeControl), Goals(id = R.string.goals)
 
 }
 
@@ -91,8 +94,7 @@ fun TopBar(
                     )
                 }
             }
-        }
-    )
+        })
 }
 
 @Composable
@@ -103,82 +105,69 @@ fun GymApp() {
         backStackEntry?.destination?.route ?: AppScreen.Start.name
     )
 
-    Scaffold(
-        topBar = {
-            TopBar(
-                currentScreenTitle = currentScreen.id,
-                goBack = { navController.navigateUp() },
-                canGoBack = navController.previousBackStackEntry != null
-            )
-        },
-        bottomBar = {
-            val currentScreen = backStackEntry?.destination?.route
-            if (!(currentScreen == AppScreen.Start.name || currentScreen == AppScreen.Quiz.name)) {
-                NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
-                    NavigationBarItem(
-                        selected = (currentScreen == AppScreen.WeeklyView.name),
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = stringResource(R.string.weekly_view)
+    Scaffold(topBar = {
+        TopBar(
+            currentScreenTitle = currentScreen.id,
+            goBack = { navController.navigateUp() },
+            canGoBack = navController.previousBackStackEntry != null
+        )
+    }, bottomBar = {
+        val currentScreen = backStackEntry?.destination?.route
+        if (!(currentScreen == AppScreen.Start.name || currentScreen == AppScreen.Quiz.name)) {
+            NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
+                NavigationBarItem(selected = (currentScreen == AppScreen.WeeklyView.name), icon = {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = stringResource(R.string.weekly_view)
 
-                            )
-                        },
-                        onClick = { navController.navigate(AppScreen.WeeklyView.name) }
-                    )//weekly
-                    NavigationBarItem(
-                        selected = (currentScreen == AppScreen.DailyView.name),
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Face,
-                                contentDescription = stringResource(R.string.daily_view)
+                    )
+                }, onClick = { navController.navigate(AppScreen.WeeklyView.name) })//weekly
+                NavigationBarItem(selected = (currentScreen == AppScreen.DailyView.name), icon = {
+                    Icon(
+                        contentDescription = stringResource(R.string.daily_view),
+                        painter = painterResource(R.drawable.sun)
 
-                            )
-                        },
-                        onClick = { navController.navigate(AppScreen.DailyView.name) }
-                    )//daily
-                    NavigationBarItem(
-                        selected = (currentScreen == AppScreen.Settings.name),
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Settings,
-                                contentDescription = stringResource(R.string.settings_title)
+                    )
+                }, onClick = { navController.navigate(AppScreen.DailyView.name) })//daily
+                NavigationBarItem(selected = (currentScreen == AppScreen.Settings.name), icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = stringResource(R.string.settings_title)
 
-                            )
-                        },
-                        onClick = { navController.navigate(AppScreen.Settings.name) }
-                    )//settings
-                }
+                    )
+                }, onClick = { navController.navigate(AppScreen.Settings.name) })//settings
             }
         }
-    ) { innerPadding ->
+    }) { innerPadding ->
         val addFoodGraphName = "add_food_graph"
         val addExerciseGraphName = "add_exercise_graph"
         val settingsGraphName = "setting_graph"
+        val weekGraphName = "week_graph"
 
         val context = LocalContext.current.applicationContext
         val db = HealthDatabase.getDatabase(context)
         val weekDayViewModelFactory = WeekDayViewModelFactory(
             foodDao = db.foodDao(),
-            workoutDao = db.exerciseDao(),
-            dailyMetricsDao = db.dailyMetricsDao()
-        )
-        val addItemViewModelFactory = AddItemViewModelFactory(
-            foodDao = db.foodDao(),
             workoutDao = db.exerciseDao()
         )
-
+        val addItemViewModelFactory = AddItemViewModelFactory(
+            foodDao = db.foodDao(), workoutDao = db.exerciseDao()
+        )
+        val startDestination =
+            if (UserSettingsRepository.nameFlow.collectAsStateWithLifecycle().equals("Unknown")) {
+                AppScreen.Start.name
+            } else {
+                weekGraphName
+            }
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
-            startDestination = AppScreen.Start.name
+            startDestination = startDestination
         ) {
             composable(route = AppScreen.Start.name) {
                 LandingScreen(
-                    modifier = Modifier
-                        .background(color = colorScheme.background),
-                    onNextButtonClicked = { navController.navigate(AppScreen.Quiz.name) }
-                )
+                    modifier = Modifier.background(color = colorScheme.background),
+                    onNextButtonClicked = { navController.navigate(AppScreen.Quiz.name) })
             }
             composable(route = AppScreen.Quiz.name) {
                 val userInitViewModel: UserInitViewModel = viewModel()
@@ -186,115 +175,142 @@ fun GymApp() {
                     endQuizFunction = {
                         navController.navigate(AppScreen.WeeklyView.name)
                         userInitViewModel.updateRepo()
-                    }
-                )
+                    })
 
                 QuizScreen(
-                    modifier = Modifier
-                        .background(color = colorScheme.background),
+                    modifier = Modifier.background(color = colorScheme.background),
                     userInitViewModel = userInitViewModel,
                     quizHandlerGiven = quizHandlerToGive
                 )
             }
 
-            navigation(startDestination = AppScreen.WeeklyView.name, route = "week_graph") {
+            navigation(startDestination = AppScreen.WeeklyView.name, route = weekGraphName) {
                 composable(route = AppScreen.WeeklyView.name) { entry ->
                     val parentEntry = remember(entry) {
-                        navController.getBackStackEntry("week_graph")
+                        navController.getBackStackEntry(weekGraphName)
                     }
 
-                    val dayWeekVM: WeekDayViewModel = viewModel(parentEntry, factory = weekDayViewModelFactory)
+                    val dayWeekVM: WeekDayViewModel =
+                        viewModel(parentEntry, factory = weekDayViewModelFactory)
+                    LaunchedEffect(parentEntry) {
+                        dayWeekVM.refreshWeek()
+                    }
                     WeeklyViewScreen(
                         modifier = Modifier.background(color = colorScheme.background),
                         dayToWeekVM = dayWeekVM,
-                        goToDay = { navController.navigate(AppScreen.DailyView.name) }
-                    )
+                        goToDay = { navController.navigate(AppScreen.DailyView.name) })
                 }
 
                 composable(route = AppScreen.DailyView.name) { entry ->
                     val parentEntry = remember(entry) {
-                        navController.getBackStackEntry("week_graph")
+                        navController.getBackStackEntry(weekGraphName)
                     }
 
-                    val dayWeekVM: WeekDayViewModel = viewModel(parentEntry, factory = weekDayViewModelFactory)
-                    DailyViewScreen(day = dayWeekVM.daySelected, dayWeekVM = dayWeekVM)
+                    val dayWeekVM: WeekDayViewModel =
+                        viewModel(parentEntry, factory = weekDayViewModelFactory)
+                    LaunchedEffect(parentEntry) {
+                        dayWeekVM.refreshWeek()
+                    }
+                    DailyViewScreen(
+                        day = dayWeekVM.daySelected,
+                        dayWeekVM = dayWeekVM,
+                        goToAddFood = {
+                            navController.navigate(
+                                AppScreen.AddFoodSearch.name
+                            )
+                        },
+                        goToAddWorkout = {
+                            navController.navigate(
+                                AppScreen.AddExerciseSearch.name
+                            )
+                        })
                 }
             }
 
-            navigation(startDestination = AppScreen.AddFoodSearch.name, route =addFoodGraphName){
-                composable(route = AppScreen.AddFoodSearch.name) {entry->
-                    val parentEntry  = remember (entry){
+            navigation(startDestination = AppScreen.AddFoodSearch.name, route = addFoodGraphName) {
+                composable(route = AppScreen.AddFoodSearch.name) { entry ->
+                    val parentEntry = remember(entry) {
                         navController.getBackStackEntry(addFoodGraphName)
                     }
-                    val addFoodVM: AddItemViewModel = viewModel(parentEntry, factory = addItemViewModelFactory)
+                    val addFoodVM: AddItemViewModel =
+                        viewModel(parentEntry, factory = addItemViewModelFactory)
                     AddFoodScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(color = colorScheme.background),
                         viewModel = addFoodVM,
-                        navigateToFoodFocus = { navController.navigate(AppScreen.AddFoodFocus.name) }
-                    )
+                        navigateToFoodFocus = { navController.navigate(AppScreen.AddFoodFocus.name) })
                 }
 
-                composable(route = AppScreen.AddFoodFocus.name){entry->
-                    val parentEntry  = remember (entry){
+                composable(route = AppScreen.AddFoodFocus.name) { entry ->
+                    val parentEntry = remember(entry) {
                         navController.getBackStackEntry(addFoodGraphName)
                     }
-                    val addFoodVM: AddItemViewModel = viewModel(parentEntry, factory = addItemViewModelFactory)
+                    val now = remember { LocalDateTime.now() }
+                    val addFoodVM: AddItemViewModel =
+                        viewModel(parentEntry, factory = addItemViewModelFactory)
                     FoodFocusScreen(
                         toShow = addFoodVM.selectedFood,
-                        addItemAddViewModel = addFoodVM
-                    )
+                        addItemAddViewModel = addFoodVM,
+                        day = now,
+                        goBackToDay = { navController.navigate(AppScreen.DailyView.name) })
                 }
             }
 
-            navigation(startDestination = AppScreen.AddExerciseSearch.name, route = addExerciseGraphName){
-                composable(route = AppScreen.AddExerciseSearch.name) {entry ->
-                    val parentEntry = remember (entry){
+            navigation(
+                startDestination = AppScreen.AddExerciseSearch.name, route = addExerciseGraphName
+            ) {
+                composable(route = AppScreen.AddExerciseSearch.name) { entry ->
+                    val parentEntry = remember(entry) {
                         navController.getBackStackEntry(addExerciseGraphName)
                     }
-                    val addExerciseVM: AddItemViewModel = viewModel(parentEntry, factory = addItemViewModelFactory)
+                    val addExerciseVM: AddItemViewModel =
+                        viewModel(parentEntry, factory = addItemViewModelFactory)
                     AddExerciseScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(color = colorScheme.background),
-                        viewModel = addExerciseVM
+                        viewModel = addExerciseVM,
+                        navigateToWorkoutFocus = { navController.navigate(AppScreen.AddExerciseFocus.name) },
                     )
                 }
 
-                composable(route = AppScreen.AddExerciseFocus.name) {entry ->
-                    val parentEntry = remember (entry){
+                composable(route = AppScreen.AddExerciseFocus.name) { entry ->
+                    val parentEntry = remember(entry) {
                         navController.getBackStackEntry(addExerciseGraphName)
                     }
-                    val addExerciseVM: AddItemViewModel = viewModel(parentEntry, factory = addItemViewModelFactory)
+                    val addExerciseVM: AddItemViewModel =
+                        viewModel(parentEntry, factory = addItemViewModelFactory)
                     WorkoutFocusScreen(
-                        viewModel = addExerciseVM,
-                        toShow = addExerciseVM.selectedWorkout
+                        viewModel = addExerciseVM, toShow = addExerciseVM.selectedWorkout
                     )
                 }
             }
 
 
 
-            navigation(startDestination = AppScreen.Settings.name, route = settingsGraphName){
+            navigation(startDestination = AppScreen.Settings.name, route = settingsGraphName) {
                 composable(route = AppScreen.Settings.name) {
                     SettingsOverviewScreen(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(color = colorScheme.background)
+                            .background(color = colorScheme.background),
+                        goToPreferences = { navController.navigate(AppScreen.Preferences.name) },
+                        goToNotifications = { navController.navigate(AppScreen.Notifications.name) },
+                        goToGoals = { navController.navigate(AppScreen.Goals.name) },
                     )
 
                 }
 
-                composable(route = AppScreen.Preferences.name){
+                composable(route = AppScreen.Preferences.name) {
                     PreferencesManagingScreen()
                 }
 
-                composable(route = AppScreen.Notifications.name){
+                composable(route = AppScreen.Notifications.name) {
                     NotifTimeManagingScreen()
                 }
 
-                composable(route = AppScreen.Goals.name){
+                composable(route = AppScreen.Goals.name) {
                     GoalsManagingScreen()
                 }
             }

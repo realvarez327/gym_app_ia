@@ -18,7 +18,7 @@ import com.example.gymappia.data.roomClasses.WorkoutEntity
 abstract class HealthDatabase : RoomDatabase() {
     abstract fun exerciseDao(): WorkoutDao
     abstract fun foodDao(): FoodDao
-    abstract fun dailyMetricsDao(): DailyMetricsDao
+
 
     companion object {
         @Volatile

@@ -17,6 +17,7 @@ interface FoodDao {
     @Query("SELECT * FROM foods WHERE date_time_eaten=:givenDay AND parent_meal_type=:givenMealType")
     suspend fun loadFoodByMealType(givenDay: LocalDateTime, givenMealType: MealType): List<FoodEntity>
 
+
     @Insert
     suspend fun addFood(foodToAdd: FoodEntity)
 

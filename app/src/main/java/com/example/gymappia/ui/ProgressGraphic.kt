@@ -24,20 +24,20 @@ class ProgressGraphic {
     ) {
         var degreeAmt = 0f
         Canvas(modifier = modifier.size(480.dp)) {
-            val halfTriangleCenterAngle: Float= (((2*PI)/goalColors.size)/2).toFloat()
-            var progressAmt = 0.1f
+            val halfTriangleCenterAngle: Float=((PI)/8).toFloat()
+            var progressAmt = 0.4f
             goalColors.forEach { color ->
 
                 //DrawSector(color = color, progressAmount = 2.0, rotationAmount = degreeAmt, canvasSize = 15f)
                 degreeAmt += 45f
-                drawSector(
+                drawSectorFromFloat(
                     drawScope =this,
                     progressAmount = progressAmt,
                     rotationAmount = degreeAmt,
                     color = color,
                     triangleCenterAngleHalf = halfTriangleCenterAngle
                 )
-                progressAmt*=-1.05f
+
 
             }
         }
@@ -48,27 +48,39 @@ class ProgressGraphic {
     }
 
     @Composable
-    fun RealDrawProgressGraphic(
+    fun DrawProgressGraphicFromMetrics(
         progresses:List<DailyMetrics>,
         modifier: Modifier = Modifier,
 
         ) {
         var degreeAmt = 0f
+        var triangleCount =progresses.size
         Canvas(modifier = modifier.size(480.dp)) {
-            val halfTriangleCenterAngle: Float= (((2*PI)/progresses.size)/2).toFloat()
+
+            val halfTriangleCenterAngle: Float= ((PI)/8).toFloat()
             var progressAmt = 0.1f
             progresses.forEach { progressGiven ->
 
                 //DrawSector(color = color, progressAmount = 2.0, rotationAmount = degreeAmt, canvasSize = 15f)
                 degreeAmt += 45f
-                realDrawSector(
+                drawSectorFromProgress(
                     drawScope =this,
                     progress = progressGiven,
                     rotationAmount = degreeAmt,
                     triangleCenterAngleHalf = halfTriangleCenterAngle
                 )
-                progressAmt*=-1.05f
 
+            }
+            while(triangleCount<8){
+                degreeAmt+=45f
+                drawSectorFromFloat(
+                    color = Color.DarkGray,
+                    progressAmount = 0.5f,
+                    rotationAmount = degreeAmt,
+                    drawScope = this,
+                    triangleCenterAngleHalf = halfTriangleCenterAngle,
+                )
+                triangleCount++
             }
         }
 
@@ -79,7 +91,7 @@ class ProgressGraphic {
 
 
 
-    fun drawSector(
+    fun drawSectorFromFloat(
         color: Color,
         progressAmount: Float,
         rotationAmount: Float = 0f,
@@ -104,7 +116,7 @@ class ProgressGraphic {
 
     }
 
-    fun realDrawSector(
+    fun drawSectorFromProgress(
         progress: DailyMetrics,
         rotationAmount: Float = 0f,
         drawScope: DrawScope,

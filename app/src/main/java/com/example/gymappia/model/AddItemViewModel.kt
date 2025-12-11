@@ -1,5 +1,6 @@
 package com.example.gymappia.model
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,6 +16,7 @@ import com.example.gymappia.data.roomClasses.MealType
 import com.example.gymappia.data.NutrimentsInServing
 import com.example.gymappia.data.roomClasses.WorkoutDao
 import com.example.gymappia.data.roomClasses.WorkoutEntity
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -46,7 +48,9 @@ class AddItemViewModel (
     fun barcodeFoodSearch(
         codeScanned:String
     ){
-        viewModelScope.launch {
+        searchJob?.cancel()
+        foodCodeSearchResponse = null
+        searchJob = viewModelScope.launch {
             foodCodeSearchIsLoading=true
             try{
                 foodCodeSearchResponse = FoodApiClient.apiService.getFoodByBarcode(codeScanned).products?.firstOrNull()
@@ -59,26 +63,38 @@ class AddItemViewModel (
         }
     }
 
+    private var searchJob: Job? = null
+
     fun queryFoodSearch(
         query:String
     ){
-        viewModelScope.launch {
+        searchJob?.cancel()
+        Log.d("food search", "queryFoodSearch called with $query")
+        searchJob = viewModelScope.launch {
+            foodQuerySearchResponse = emptyList()
             foodQuerySearchIsLoading=true
             try{
                 foodQuerySearchResponse = FoodApiClient.apiService.search(query).products?:emptyList()
+                Log.d("food prod", foodQuerySearchResponse.toString())
             }catch (e: Exception){
                 errorMessage = e.message
+                Log.e("queryFoodSearch",e.message?:"error")
                 foodQuerySearchResponse = emptyList()
             }finally {
+                Log.d("queryFoodSearch", "done loading")
                 foodQuerySearchIsLoading = false
             }
         }
+
     }
 
     fun exerciseSearch(
         query:String
     ){
-        viewModelScope.launch {
+        Log.d("exercise search", "exercise search called")
+        exerciseSearchResponse = emptyList()
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
             exerciseSearchIsLoading = true
             try{
                 exerciseSearchResponse = ExerciseApiClient.apiService.getExcercisesBySearch(query)

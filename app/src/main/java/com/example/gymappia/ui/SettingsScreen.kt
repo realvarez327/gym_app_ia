@@ -1,6 +1,7 @@
 package com.example.gymappia.ui
 
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +54,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -71,36 +73,42 @@ enum class SettingOption(@StringRes val settingNameId: Int) {
 }
 
 
-
 @Composable
-fun SettingsOverviewScreen(modifier: Modifier = Modifier) {
+fun SettingsOverviewScreen(
+    modifier: Modifier = Modifier,
+    goToPreferences: () -> Unit,
+    goToNotifications: () -> Unit,
+    goToGoals: () -> Unit
+) {
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column {
-            Text(
-                text = stringResource(R.string.settings_title),
-                style = MaterialTheme.typography.displaySmall,
-                modifier = modifier.padding(start = 8.dp)
-            )
-            Spacer(
-                modifier = modifier.height(16.dp)
-            )
-            for (setting: SettingOption in SettingOption.entries) {
-                SettingOptionButton(
-                    modifier = modifier,
-                    goToClickedScreen = {},
-                    settingID = setting.settingNameId
-                )
-            }
-        }
+        val mod = Modifier
+
+        Spacer(
+            modifier = mod.height(16.dp)
+        )
+
+        SettingOptionButton(
+            modifier = mod,
+            goToClickedScreen = { goToNotifications() },
+            settingID = SettingOption.Notifications.settingNameId
+        )
+        SettingOptionButton(
+            modifier = mod,
+            goToClickedScreen = { goToGoals() },
+            settingID = SettingOption.Goals.settingNameId
+        )
+        SettingOptionButton(
+            modifier = mod,
+            goToClickedScreen = { goToPreferences() },
+            settingID = SettingOption.Preferences.settingNameId
+        )
+
 
     }
 }
-
-
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,16 +118,18 @@ fun SettingOptionButton(
     goToClickedScreen: () -> Unit,
     @StringRes settingID: Int
 ) {
-    Row(modifier = modifier.padding(8.dp)) {
+    Log.d("setting btn", "setting button called")
+    Row(modifier = Modifier.padding(8.dp)) {
         Button(
             onClick = goToClickedScreen,
             colors = ButtonDefaults.buttonColors(
-                containerColor = colorScheme.secondary
+                containerColor = colorScheme.secondaryContainer,
+                contentColor = colorScheme.secondary
             ),
-            modifier = modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
 
         ) {
-            Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceBetween) {
+            Row( horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     text = stringResource(settingID),
                     style = MaterialTheme.typography.headlineSmall
@@ -128,7 +138,7 @@ fun SettingOptionButton(
 
                     imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                     contentDescription = stringResource(R.string.next_button),
-                    modifier = modifier.align(alignment = Alignment.CenterVertically)
+                    modifier = Modifier.align(alignment = Alignment.CenterVertically)
                 )
 
             }
@@ -138,7 +148,6 @@ fun SettingOptionButton(
 }
 
 
-
 //todo this does not survive rotation, maybe should in the future
 @Composable
 fun GoalsManagingScreen(modifier: Modifier = Modifier) {
@@ -146,7 +155,9 @@ fun GoalsManagingScreen(modifier: Modifier = Modifier) {
     var localGoals = remember { currGoals.toMutableStateList() }
 
     Column(
-        modifier = modifier.fillMaxSize().padding(8.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -206,7 +217,9 @@ fun GoalsManagingScreen(modifier: Modifier = Modifier) {
 fun GoalsManagingScreenPrev(modifier: Modifier = Modifier) {
     var localGoals = remember { mutableListOf<FitnessGoal>() }
     Column(
-        modifier = modifier.fillMaxSize().padding(8.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -257,10 +270,10 @@ fun GoalsManagingScreenPrev(modifier: Modifier = Modifier) {
 
 @Composable
 fun PreferencesManagingScreen(modifier: Modifier = Modifier) {
-    val currName by UserSettingsRepository.nameFlow.collectAsState()
-    val currAge by UserSettingsRepository.ageFlow.collectAsState()
-    val currWeight by UserSettingsRepository.weightFlow.collectAsState()
-    val currHeight by UserSettingsRepository.heightFlow.collectAsState()
+    val currName by UserSettingsRepository.nameFlow.collectAsStateWithLifecycle()
+    val currAge by UserSettingsRepository.ageFlow.collectAsStateWithLifecycle()
+    val currWeight by UserSettingsRepository.weightFlow.collectAsStateWithLifecycle()
+    val currHeight by UserSettingsRepository.heightFlow.collectAsStateWithLifecycle()
 
     var localAge by rememberSaveable { mutableStateOf(currAge.toString()) }
     var localName by rememberSaveable { mutableStateOf(currName) }
@@ -268,8 +281,10 @@ fun PreferencesManagingScreen(modifier: Modifier = Modifier) {
     var localWeight by rememberSaveable { mutableStateOf(currWeight.toString()) }
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .background(color = Color.Yellow)
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+
     ) {
         Row {
 
@@ -430,7 +445,6 @@ fun PreferencesManagingScreenPrev(modifier: Modifier = Modifier) {
     var localName by rememberSaveable { mutableStateOf("") }
     var localHeight by rememberSaveable { mutableStateOf("") }
     var localWeight by rememberSaveable { mutableStateOf("") }
-    var localGoals = rememberSaveable { mutableStateListOf<FitnessGoal>() }
     Column(
         modifier = modifier
             .fillMaxSize(),
@@ -511,7 +525,12 @@ fun PreferencesManagingScreenPrev(modifier: Modifier = Modifier) {
 fun SettingOverviewScreenPreview() {
     GymAppIATheme {
 
-        SettingsOverviewScreen(modifier = Modifier)
+        SettingsOverviewScreen(
+            modifier = Modifier,
+            goToPreferences = { },
+            goToNotifications = { },
+            goToGoals = {}
+        )
     }
 }
 

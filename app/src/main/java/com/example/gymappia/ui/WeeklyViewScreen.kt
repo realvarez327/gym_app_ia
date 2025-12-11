@@ -3,6 +3,7 @@ package com.example.gymappia.ui
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,16 +16,20 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymappia.R
 import com.example.gymappia.data.UserSettingsRepository
+import com.example.gymappia.model.DailyMetricType
+import com.example.gymappia.model.DailyMetrics
 import com.example.gymappia.model.Day
+import java.time.LocalDate
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,8 +41,10 @@ fun WeeklyViewScreen(
 ) {
     Log.d("navigation", "weekly view screen loaded :)")
     Column(modifier = modifier.fillMaxSize()) {
+        val today: LocalDate = LocalDate.now()
+        val name by UserSettingsRepository.nameFlow.collectAsStateWithLifecycle()
         Text(
-            text = stringResource(R.string.welcome_user_to_week, UserSettingsRepository.nameFlow),
+            text = stringResource(R.string.welcome_user_to_week, name),
             modifier = modifier.padding(4.dp),
             textAlign = TextAlign.Center
         )
@@ -45,11 +52,11 @@ fun WeeklyViewScreen(
             DayPreview(
                 modifier = modifier,
                 goToDay = { day ->
-                    dayToWeekVM.daySelected = day
+                    dayToWeekVM.daySelected = day.copy()
                     goToDay()
                 },
-                dayWeekVM = dayToWeekVM,
-                day = day
+                day = day,
+                isToday = (day.date==today)
             )
         }
     }
@@ -59,10 +66,10 @@ fun WeeklyViewScreen(
 fun DayPreview(
     modifier: Modifier = Modifier,
     goToDay: (Day) -> Unit,
-    dayWeekVM: WeekDayViewModel,
-    day: Day
+    day: Day,
+    isToday:Boolean
 ) {
-    val containerBg: Color = if (dayWeekVM.daySelected == day) {
+    val containerBg: Color = if (isToday) {
         MaterialTheme.colorScheme.tertiaryContainer
     } else {
         MaterialTheme.colorScheme.secondaryContainer
@@ -78,27 +85,26 @@ fun DayPreview(
             contentColor = MaterialTheme.colorScheme.primary
         )
     ) {
-        Column(modifier = modifier.padding(4.dp)) {
+        Column(modifier = modifier.background(containerBg).padding(4.dp)) {
             Text(
                 text = day.date.dayOfWeek.name,
-                style = MaterialTheme.typography.labelLarge,
-                modifier = modifier.background(containerBg)
+                style = MaterialTheme.typography.labelLarge
             )
             Text(
                 text = day.prettyDate,
-                style = MaterialTheme.typography.labelMedium,
-                modifier = modifier.background(containerBg)
+                style = MaterialTheme.typography.labelMedium
             )
         }
         Column(
-            modifier = modifier.padding(4.dp)
+            modifier = modifier.background(color = containerBg).padding(4.dp)
         ) {
-            ProgressGraphic().RealDrawProgressGraphic(
+            ProgressGraphic().DrawProgressGraphicFromMetrics(
                 progresses = day.progressInGoals,
-                modifier = modifier
-                    .size(60.dp)
+                modifier = Modifier
+                    .size(50.dp)
                     .background(color = containerBg)
             )
+
         }
 
     }
@@ -107,9 +113,32 @@ fun DayPreview(
 @Preview(showBackground = true)
 @Composable
 fun WeeklyViewScreenPreview(modifier: Modifier = Modifier) {
-    WeeklyViewScreen(
-        modifier,
-        dayToWeekVM = viewModel(),
-        goToDay = { }
-    )
+//    val db = HealthDatabase.getDatabase(LocalContext.current.applicationContext)
+//    val dwvm: WeekDayViewModel =viewModel(
+//        factory = WeekDayViewModelFactory(
+//            foodDao = db.foodDao(),
+//            workoutDao = db.exerciseDao(),
+//            dailyMetricsDao = db.dailyMetricsDao()
+//        )
+//    )
+    val now = LocalDate.now()
+    val testProgresses :List<DailyMetrics> = listOf(DailyMetrics(
+        progressAmt = 0.5f,
+        dailyMetricName = DailyMetricType.Fat,
+        day = now
+    ), DailyMetrics(
+        progressAmt = 0.4f,
+        dailyMetricName = DailyMetricType.Calories,
+        day = now
+    ))
+DayPreview(
+    goToDay = {  },
+    day = Day(
+        date = now,
+        foods = emptyList(),
+        workouts = emptyList(),
+        progressInGoals = testProgresses
+    ),
+    isToday = true
+)
 }

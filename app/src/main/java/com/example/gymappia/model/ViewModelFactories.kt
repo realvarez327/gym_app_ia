@@ -12,14 +12,13 @@ import com.example.gymappia.ui.WeekDayViewModel
 class WeekDayViewModelFactory(
     private val foodDao: FoodDao,
     private val workoutDao: WorkoutDao,
-    private val dailyMetricsDao: DailyMetricsDao
+
 ): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if(modelClass.isAssignableFrom(WeekDayViewModel::class.java)){
             return WeekDayViewModel(
                 foodDao = foodDao,
-                workoutDao = workoutDao,
-                dailyMetricsDao = dailyMetricsDao
+                workoutDao = workoutDao
             ) as T
         }
         throw IllegalArgumentException("Not week day view model class! instead is $modelClass")

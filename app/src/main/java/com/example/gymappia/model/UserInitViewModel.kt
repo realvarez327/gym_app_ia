@@ -47,7 +47,6 @@ class UserInitViewModel : ViewModel() {
                    cals+=400
                }
            }
-            //todo add macrotracking later
             //assuming that weight is kg
             UserSettingsRepository.putDailyCalories(cals.roundToInt())
             UserSettingsRepository.putProtein((state.userWeight!!*2.2f).roundToInt())
