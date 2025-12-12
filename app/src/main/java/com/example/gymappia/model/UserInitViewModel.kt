@@ -8,10 +8,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.math.roundToInt
 
-class UserInitViewModel : ViewModel() {
+class UserInitViewModel (): ViewModel() {
     private val _uiInitState = MutableStateFlow(UserInitUiState())
 
     val uiInitState: StateFlow<UserInitUiState> = _uiInitState.asStateFlow()
+
+    private val _isQuizFinished = MutableStateFlow(false)
+    val isQuizFinished: StateFlow<Boolean> = _isQuizFinished.asStateFlow()
+
+    fun restartQuiz(){
+        _isQuizFinished.value = false
+    }
+
+    fun onQuizFinished(){
+        updateRepo()
+        _isQuizFinished.value = true
+        quizHandler.resetQuiz()
+    }
+
+    val quizHandler = QuizHandler()
 
     fun updateRepo(){
         val state = _uiInitState.value

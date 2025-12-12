@@ -4,7 +4,7 @@ package com.example.gymappia.model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.gymappia.data.roomClasses.DailyMetricsDao
+
 import com.example.gymappia.data.roomClasses.FoodDao
 import com.example.gymappia.data.roomClasses.WorkoutDao
 import com.example.gymappia.ui.WeekDayViewModel
@@ -39,4 +39,3 @@ class AddItemViewModelFactory(
         throw IllegalArgumentException("Not add item view model class, instead is $modelClass")
     }
 }
-

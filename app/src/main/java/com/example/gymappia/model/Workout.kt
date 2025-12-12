@@ -4,12 +4,12 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 
-class Workout (
+data class Workout (
 
     var workoutName:String = "",
     var repetitions:Int = 1,
-    var orderInDay:Int =1,
-    var parentDay: LocalDateTime
-
+    var parentDay: LocalDateTime,
+    var setNumber:Int,
+    var weightUsed:Float
 
 )

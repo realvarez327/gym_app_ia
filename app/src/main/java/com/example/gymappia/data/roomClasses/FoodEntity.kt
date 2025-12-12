@@ -17,7 +17,7 @@ data class FoodEntity(
     @ColumnInfo(name = "serving_size") val servingSize: Float,
     @ColumnInfo(name = "food_name") val foodName: String,
     @ColumnInfo(name = "image_url") val imageUrl:String?,
-    @ColumnInfo(name = "date_time_eaten") val consumptionDateTime: LocalDateTime,
+    @ColumnInfo(name = "date_time_eaten") val consumptionDateTime: Long,
     @ColumnInfo(name = "protein_in_serving") val proteinInServing:Float,
     @ColumnInfo(name = "carbs_in_serving") val carbsInServing:Float,
     @ColumnInfo(name = "fat_in_serving") val fatInServing:Float,

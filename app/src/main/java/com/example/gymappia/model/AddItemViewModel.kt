@@ -6,8 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gymappia.data.ExerciseApiClient
-import com.example.gymappia.data.ExerciseApiResponse
+
 import com.example.gymappia.data.FoodApiClient
 import com.example.gymappia.data.roomClasses.FoodDao
 import com.example.gymappia.data.roomClasses.FoodEntity
@@ -18,8 +17,8 @@ import com.example.gymappia.data.roomClasses.WorkoutDao
 import com.example.gymappia.data.roomClasses.WorkoutEntity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class AddItemViewModel (
     private val foodDao: FoodDao,
@@ -36,11 +35,6 @@ class AddItemViewModel (
 
     var foodCodeSearchIsLoading by mutableStateOf(false)
 
-    var exerciseSearchResponse by mutableStateOf<List<ExerciseApiResponse>>(emptyList())
-        private set
-
-    var exerciseSearchIsLoading by mutableStateOf(false)
-
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
@@ -55,6 +49,7 @@ class AddItemViewModel (
             try{
                 foodCodeSearchResponse = FoodApiClient.apiService.getFoodByBarcode(codeScanned).products?.firstOrNull()
             }catch (e: Exception){
+                Log.e("barcode scanning",e.message.toString())
                 errorMessage = e.message
                 foodCodeSearchResponse = null
             }finally {
@@ -88,23 +83,7 @@ class AddItemViewModel (
 
     }
 
-    fun exerciseSearch(
-        query:String
-    ){
-        Log.d("exercise search", "exercise search called")
-        exerciseSearchResponse = emptyList()
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch {
-            exerciseSearchIsLoading = true
-            try{
-                exerciseSearchResponse = ExerciseApiClient.apiService.getExcercisesBySearch(query)
-            }catch (e: Exception){
-                errorMessage = e.message
-            }finally {
-                exerciseSearchIsLoading = false
-            }
-        }
-    }
+
 
     fun clearErrorMessage(){
         errorMessage = null
@@ -122,7 +101,7 @@ class AddItemViewModel (
             servingSize = serving,
             foodName = given.product_name,
             imageUrl = given.image_url?:"",
-            consumptionDateTime = day,
+            consumptionDateTime = day.toEpochSecond(ZoneOffset.UTC),
             proteinInServing = givenNutrimentsInServing.protein,
             carbsInServing = givenNutrimentsInServing.carbs,
             fatInServing = givenNutrimentsInServing.fat,
@@ -138,12 +117,16 @@ class AddItemViewModel (
     fun insertWorkout(
         name:String,
         reps: Int,
-        day: LocalDateTime
+        day: LocalDateTime,
+        parentSet:Int,
+        weight: Float
     ){
         val toInsert: WorkoutEntity= WorkoutEntity(
             exerciseName = name,
-            dayOfWorkout = day,
-            repetitions = reps
+            dayOfWorkout = day.toEpochSecond(ZoneOffset.UTC),
+            repetitions = reps,
+            setNumber = parentSet,
+            weightUsed = weight
         )
         viewModelScope.launch {
             workoutDao.addWorkout(toInsert)
@@ -153,5 +136,5 @@ class AddItemViewModel (
     //storing selected items
     var selectedFood by mutableStateOf<FoodProduct?>(null)
 
-    var selectedWorkout by mutableStateOf<ExerciseApiResponse?>(null)
+    var selectedWorkout by mutableStateOf<Workout?>(null)
 }

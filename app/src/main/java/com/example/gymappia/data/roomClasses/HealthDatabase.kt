@@ -10,8 +10,7 @@ import com.example.gymappia.data.roomClasses.WorkoutEntity
 
 @Database(entities = [
     WorkoutEntity::class,
-    FoodEntity::class,
-    DailyMetricsEntity::class], version = 1, exportSchema = false)
+    FoodEntity::class], version = 2, exportSchema = false)
 @TypeConverters(
     ConvertersForRoom::class
 )

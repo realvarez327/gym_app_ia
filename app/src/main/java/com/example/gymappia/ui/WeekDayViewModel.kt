@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymappia.data.DataModelConverters
 import com.example.gymappia.data.UserSettingsRepository
-import com.example.gymappia.data.roomClasses.DailyMetricsDao
+
 import com.example.gymappia.data.roomClasses.FoodDao
 import com.example.gymappia.data.roomClasses.WorkoutDao
 import com.example.gymappia.model.DailyMetricType
@@ -22,6 +22,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.temporal.TemporalAdjuster
 import java.time.temporal.TemporalAdjusters
 
@@ -90,8 +91,8 @@ class WeekDayViewModel(
     suspend fun getFoodsOfDay(given: LocalDateTime): List<Food> {
         val start = given.toLocalDate().atStartOfDay()
         val end = start.plusDays(1).minusNanos(1)
-        val startEpoch = start.toEpochSecond(ZoneId.systemDefault().rules.getOffset(start))
-        val endEpoch = end.toEpochSecond(ZoneId.systemDefault().rules.getOffset(end))
+        val startEpoch = start.toEpochSecond(ZoneOffset.UTC)
+        val endEpoch = end.toEpochSecond(ZoneOffset.UTC)
         return converters.ListOfFoodEntityToListOfFood(foodDao.loadDaysFoods(startEpoch, endEpoch))
 
 
@@ -100,8 +101,8 @@ class WeekDayViewModel(
     suspend fun getWorkoutsOfDay(given: LocalDateTime): List<Workout> {
         val start = given.toLocalDate().atStartOfDay()
         val end = start.plusDays(1).minusNanos(1)
-        val startEpoch = start.toEpochSecond(ZoneId.systemDefault().rules.getOffset(start))
-        val endEpoch = end.toEpochSecond(ZoneId.systemDefault().rules.getOffset(end))
+        val startEpoch = start.toEpochSecond(ZoneOffset.UTC)
+        val endEpoch = end.toEpochSecond(ZoneOffset.UTC)
         return converters.ListOfWorkoutEntityToListOfWorkout(
             workoutDao.loadWorkoutsOfDay(
                 startEpoch,

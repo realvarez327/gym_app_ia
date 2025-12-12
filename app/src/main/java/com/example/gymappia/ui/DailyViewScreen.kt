@@ -216,15 +216,15 @@ fun FoodViewScreen(
 fun MealFoodsList(mealList: List<Food>) {
     LazyColumn {
         items(mealList) { item ->
-            FoodBubble(food = item)
+            FoodBubble(food = item, onClick = {})//todo add routing
         }
     }
 }
 
 @Composable
-fun FoodBubble(modifier: Modifier = Modifier, food: Food) {
+fun FoodBubble(modifier: Modifier = Modifier, food: Food, onClick: () -> Unit) {
     Button(
-        onClick = {},//enable travelling to same focus screen todo
+        onClick = { onClick() },//enable travelling to same focus screen todo
         shape = RoundedCornerShape(size = 12.dp)
     ) {
         Row {
@@ -256,6 +256,11 @@ fun WorkoutBubble(modifier: Modifier = Modifier, workout: Workout) {
                 text = "${workout.repetitions} repetitions",
                 style = MaterialTheme.typography.bodySmall
             )
+            Spacer(modifier = modifier.weight(1.5f))
+            Text(
+                text = "${workout.setNumber} sets",
+                style = MaterialTheme.typography.bodySmall
+            )
 
         }
 
@@ -285,7 +290,8 @@ fun WorkoutViewScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "workouts")//todo add set organization
-        WorkoutsList(workoutsList = DWVM.daySelected.workouts)
+        val workoutsList = DWVM.daySelected.workouts//empty list
+        WorkoutsList(workoutsList = workoutsList)
         Spacer(modifier = modifier.weight(1f))
         AddItemButton(
             modifier = modifier,
@@ -301,7 +307,7 @@ fun WorkoutViewScreen(
 @Composable
 fun DailyViewScreenPreview() {
     val db = HealthDatabase.getDatabase(LocalContext.current.applicationContext)
-    val dwvm: WeekDayViewModel =viewModel(
+    val dwvm: WeekDayViewModel = viewModel(
         factory = WeekDayViewModelFactory(
             foodDao = db.foodDao(),
             workoutDao = db.exerciseDao()

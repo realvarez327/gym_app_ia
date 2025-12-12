@@ -1,15 +1,20 @@
 package com.example.gymappia.data
 
-import com.example.gymappia.data.roomClasses.DailyMetricsEntity
+import androidx.compose.ui.geometry.Offset
+
 import com.example.gymappia.data.roomClasses.FoodEntity
 import com.example.gymappia.data.roomClasses.WorkoutEntity
 import com.example.gymappia.model.DailyMetrics
 import com.example.gymappia.model.Day
 import com.example.gymappia.model.Food
 import com.example.gymappia.model.Workout
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 class DataModelConverters {
-    fun FoodEntityToFood(given: FoodEntity):Food{
+    fun FoodEntityToFood(given: FoodEntity): Food {
+
         val created = Food(
             foodName = given.foodName,
             calsPer = given.caloriesInServing,
@@ -19,19 +24,23 @@ class DataModelConverters {
             carbs = given.carbsInServing,
             sugar = given.sugarInServing,
             mealType = given.mealType,
-            dayTime = given.consumptionDateTime,
+            dayTime = LocalDateTime.ofEpochSecond(
+                given.consumptionDateTime,
+                0,
+                ZoneId.systemDefault().rules.getOffset(LocalDateTime.now())
+            ),
             imageUrl = given.imageUrl
         )
         return created
     }
 
-    fun FoodToFoodEntity(given:Food): FoodEntity {
+    fun FoodToFoodEntity(given: Food): FoodEntity {
         val created = FoodEntity(
             mealType = given.mealType,
             servingSize = given.servingSize,
             foodName = given.foodName,
             imageUrl = given.imageUrl,
-            consumptionDateTime = given.dayTime,
+            consumptionDateTime = given.dayTime.toEpochSecond(ZoneOffset.UTC),
             proteinInServing = given.protein,
             carbsInServing = given.carbs,
             fatInServing = given.fat,
@@ -41,69 +50,58 @@ class DataModelConverters {
         return created
     }
 
-    fun ListOfFoodEntityToListOfFood(given:List<FoodEntity>):List<Food>{
+    fun ListOfFoodEntityToListOfFood(given: List<FoodEntity>): List<Food> {
         var toReturn: MutableList<Food> = mutableListOf()
-        for (item in given){
+        for (item in given) {
             toReturn.add(FoodEntityToFood(item))
         }
         return toReturn.toList()
     }
 
-    fun WorkoutEntityToWorkout(given: WorkoutEntity): Workout{
+    fun WorkoutEntityToWorkout(given: WorkoutEntity): Workout {
         val toReturn = Workout(
             workoutName = given.exerciseName,
             repetitions = given.repetitions,
-            parentDay = given.dayOfWorkout
+//            parentDay = given.dayOfWorkout,
+            parentDay = LocalDateTime.ofEpochSecond(
+                given.dayOfWorkout,
+                0,
+                ZoneId.systemDefault().rules.getOffset(LocalDateTime.now())),
+            setNumber = given.setNumber,
+            weightUsed = given.weightUsed,
         )
         return toReturn
     }
 
-    fun WorkoutEntityListToWorkout(given:List<WorkoutEntity>): List<Workout>{
+    fun WorkoutEntityListToWorkout(given: List<WorkoutEntity>): List<Workout> {
         var toReturn: MutableList<Workout> = mutableListOf()
-        for(item in given){
+        for (item in given) {
             toReturn.add(WorkoutEntityToWorkout(item))
         }
         return toReturn.toList()
     }
 
-    fun WorkoutToWorkoutEntity(given: Workout): WorkoutEntity{
+    fun WorkoutToWorkoutEntity(given: Workout): WorkoutEntity {
         return WorkoutEntity(
             exerciseName = given.workoutName,
-            dayOfWorkout = given.parentDay,
-            repetitions = given.repetitions
+            dayOfWorkout = given.parentDay.toEpochSecond(ZoneOffset.UTC),
+            repetitions = given.repetitions,
+            setNumber = given.setNumber,
+            weightUsed = given.weightUsed
         )
     }
 
-    fun ListOfWorkoutEntityToListOfWorkout(given:List<WorkoutEntity>):List<Workout>{
+    fun ListOfWorkoutEntityToListOfWorkout(given: List<WorkoutEntity>): List<Workout> {
         var toReturn: MutableList<Workout> = mutableListOf()
-        for (item in given){
+        for (item in given) {
             toReturn.add(WorkoutEntityToWorkout(item))
         }
         return toReturn.toList()
     }
 
-    fun DailyMetricsToDailyMetricsEntity(given: DailyMetrics): DailyMetricsEntity{
-        return DailyMetricsEntity(
-            metricName = given.dailyMetricName,
-            progressAmount = given.progressAmt,
-            dateAndTime = given.day
-        )
-    }
 
-    fun DailyMetricsEntityToDailyMetrics(given: DailyMetricsEntity): DailyMetrics{
-        return DailyMetrics(
-            progressAmt = given.progressAmount,
-            dailyMetricName = given.metricName,
-            day = given.dateAndTime
-        )
-    }
 
-    fun ListOfDailyMetricsEntitiesToListOfDailyMetrics(given:List<DailyMetricsEntity>):List<DailyMetrics>{
-        var toReturn: MutableList<DailyMetrics> = mutableListOf()
-        for(item in given){
-            toReturn.add(DailyMetricsEntityToDailyMetrics(item))
-        }
-        return toReturn.toList()
-    }
+
+
 
 }

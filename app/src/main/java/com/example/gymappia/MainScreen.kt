@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,13 +36,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.navigation
 import com.example.gymappia.data.UserSettingsRepository
-import com.example.gymappia.data.roomClasses.DailyMetricsDao
-import com.example.gymappia.data.roomClasses.FoodDao
 import com.example.gymappia.data.roomClasses.HealthDatabase
-import com.example.gymappia.data.roomClasses.WorkoutDao
 import com.example.gymappia.model.AddItemViewModel
 import com.example.gymappia.model.AddItemViewModelFactory
-import com.example.gymappia.model.QuizHandler
 import com.example.gymappia.ui.AddExerciseScreen
 import com.example.gymappia.ui.AddFoodScreen
 import com.example.gymappia.ui.DailyViewScreen
@@ -56,7 +51,7 @@ import com.example.gymappia.ui.NotifTimeManagingScreen
 import com.example.gymappia.ui.PreferencesManagingScreen
 import com.example.gymappia.ui.WeekDayViewModel
 import com.example.gymappia.ui.WeeklyViewScreen
-import com.example.gymappia.ui.WorkoutFocusScreen
+
 import java.time.LocalDateTime
 
 enum class AppScreen(@StringRes val id: Int) {
@@ -153,12 +148,15 @@ fun GymApp() {
         val addItemViewModelFactory = AddItemViewModelFactory(
             foodDao = db.foodDao(), workoutDao = db.exerciseDao()
         )
+        val currentNameFlow = UserSettingsRepository.nameFlow.collectAsStateWithLifecycle().value
         val startDestination =
-            if (UserSettingsRepository.nameFlow.collectAsStateWithLifecycle().equals("Unknown")) {
+            if (currentNameFlow=="Unknown") {
                 AppScreen.Start.name
             } else {
                 weekGraphName
             }
+
+        val userInitViewModel: UserInitViewModel = viewModel()
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
@@ -170,17 +168,15 @@ fun GymApp() {
                     onNextButtonClicked = { navController.navigate(AppScreen.Quiz.name) })
             }
             composable(route = AppScreen.Quiz.name) {
-                val userInitViewModel: UserInitViewModel = viewModel()
-                val quizHandlerToGive = QuizHandler(
-                    endQuizFunction = {
-                        navController.navigate(AppScreen.WeeklyView.name)
-                        userInitViewModel.updateRepo()
-                    })
 
                 QuizScreen(
                     modifier = Modifier.background(color = colorScheme.background),
                     userInitViewModel = userInitViewModel,
-                    quizHandlerGiven = quizHandlerToGive
+                    endQuizFunction = {
+                        userInitViewModel.restartQuiz()
+                        navController.navigate(AppScreen.WeeklyView.name)
+
+                    }
                 )
             }
 
@@ -246,7 +242,7 @@ fun GymApp() {
                     val parentEntry = remember(entry) {
                         navController.getBackStackEntry(addFoodGraphName)
                     }
-                    val now = remember { LocalDateTime.now() }
+                    val now = remember { LocalDateTime.now() }//todo dc
                     val addFoodVM: AddItemViewModel =
                         viewModel(parentEntry, factory = addItemViewModelFactory)
                     FoodFocusScreen(
@@ -257,35 +253,20 @@ fun GymApp() {
                 }
             }
 
-            navigation(
-                startDestination = AppScreen.AddExerciseSearch.name, route = addExerciseGraphName
-            ) {
                 composable(route = AppScreen.AddExerciseSearch.name) { entry ->
-                    val parentEntry = remember(entry) {
-                        navController.getBackStackEntry(addExerciseGraphName)
-                    }
                     val addExerciseVM: AddItemViewModel =
-                        viewModel(parentEntry, factory = addItemViewModelFactory)
+                        viewModel( factory = addItemViewModelFactory)
+                    val now = remember { LocalDateTime.now() }//todo dc
                     AddExerciseScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(color = colorScheme.background),
                         viewModel = addExerciseVM,
-                        navigateToWorkoutFocus = { navController.navigate(AppScreen.AddExerciseFocus.name) },
+                        goBackToDay = {navController.navigate(AppScreen.DailyView.name)},
+                        day = now,
+                        toShow = addExerciseVM.selectedWorkout,
                     )
                 }
-
-                composable(route = AppScreen.AddExerciseFocus.name) { entry ->
-                    val parentEntry = remember(entry) {
-                        navController.getBackStackEntry(addExerciseGraphName)
-                    }
-                    val addExerciseVM: AddItemViewModel =
-                        viewModel(parentEntry, factory = addItemViewModelFactory)
-                    WorkoutFocusScreen(
-                        viewModel = addExerciseVM, toShow = addExerciseVM.selectedWorkout
-                    )
-                }
-            }
 
 
 

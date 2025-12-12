@@ -13,8 +13,9 @@ import java.time.LocalDateTime
 data class WorkoutEntity(
     @PrimaryKey(autoGenerate = true) val id:Int?=null,
     @ColumnInfo(name = "exercise_name") val exerciseName:String,
-    @ColumnInfo(name="workout_date_time") val dayOfWorkout: LocalDateTime,
-    @ColumnInfo(name = "reps")val repetitions:Int
-
+    @ColumnInfo(name="workout_date_time") val dayOfWorkout: Long,
+    @ColumnInfo(name = "reps")val repetitions:Int,
+    @ColumnInfo(name = "set_number")val setNumber:Int,
+    @ColumnInfo(name = "weight_used")val weightUsed:Float
 
 )

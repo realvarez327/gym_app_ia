@@ -36,6 +36,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 
 import androidx.compose.runtime.mutableFloatStateOf
@@ -47,32 +48,44 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymappia.data.QuestionsDataSource
 import com.example.gymappia.model.FitnessGoal
 import com.example.gymappia.model.Gender
 import com.example.gymappia.model.NumberQuestionSubject
-import com.example.gymappia.model.QuizHandler
 import com.example.gymappia.model.SingleChoiceQuestionSubject
 import com.example.gymappia.model.UserInitViewModel
 import com.example.gymappia.ui.theme.GymAppIATheme
 
 
+fun String.consistsOfOnlyLetters(): Boolean {
+    return all { it.isLetter() }
+}
 
-lateinit var quizHandler: QuizHandler
+fun String.consistsOfOnlyDigits(): Boolean {
+    return all { it.isDigit() }
+}
 
 @Composable
 fun QuizScreen(
     modifier: Modifier = Modifier,
     userInitViewModel: UserInitViewModel,
-    quizHandlerGiven: QuizHandler
+    endQuizFunction: () -> Unit
 ) {
-    quizHandler = quizHandlerGiven
     val questions = QuestionsDataSource.userStartQuestions
     val viewModel: UserInitViewModel = userInitViewModel
     //todo when i learn coroutines, add determinate linear progress indicator
-    val currIndex: Int = quizHandler.currentIndex.value
-    var currQuestion: Question = questions[currIndex]//todo check if this can be val
+    val currIndex: Int = viewModel.quizHandler.currentIndex.value
+    val currQuestion: Question = questions[currIndex]
+    val quizFinished by viewModel.isQuizFinished.collectAsStateWithLifecycle()
+
+    LaunchedEffect(quizFinished) {
+        if(quizFinished) {
+            endQuizFunction()
+        }
+    }
+
     Column(modifier = modifier.fillMaxSize()) {
 
         when (currQuestion.type) {
@@ -143,11 +156,20 @@ fun StringResponseSection(
             ),
             shape = MaterialTheme.shapes.medium
         )
-
-        NextButton(alsoOnclick = {
-            viewModel.updateUserName(value)
-            Log.d("name q", "name submitted: $value")
-        })
+        if (value.consistsOfOnlyLetters() && !value.isEmpty()) {
+            NextButton(
+                alsoOnclick = {
+                    viewModel.updateUserName(value)
+                    Log.d("name q", "name submitted: $value")
+                },
+                viewModel = viewModel
+            )
+        } else {
+            Text(
+                text = "You can only have letters here and you must submit a value!",
+                textAlign = TextAlign.Center
+            )
+        }
     }
 
 }
@@ -175,7 +197,7 @@ fun SingleChoiceSection(
                     SingleSelectChoiceBubble<Gender>(
                         stringToShow = stringResource(choice.stringId),
                         onClick = {
-                          selectedGender = choice;
+                            selectedGender = choice
                         },
                         selectedOption = selectedGender,
                         myOption = choice
@@ -186,13 +208,16 @@ fun SingleChoiceSection(
 
         }
 
-        NextButton(alsoOnclick = {
-            when (question.singleChooseSubject) {
-                SingleChoiceQuestionSubject.Gender -> viewModel.updateUserGender(selectedGender)
-            }
-            Log.d("gender q", "gender submitted: ${selectedGender.name}")
+        NextButton(
+            alsoOnclick = {
+                when (question.singleChooseSubject) {
+                    SingleChoiceQuestionSubject.Gender -> viewModel.updateUserGender(selectedGender)
+                }
+                Log.d("gender q", "gender submitted: ${selectedGender.name}")
 
-        })
+            },
+            viewModel = viewModel
+        )
     }
 
 }
@@ -227,7 +252,6 @@ fun InputNumberSection(
                     disabledContainerColor = colorScheme.surface,
                 ),
                 onValueChange = { newVal ->
-                    //todo should it check for letters in input??
                     textValue = newVal
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(
@@ -241,41 +265,50 @@ fun InputNumberSection(
 
 
         }
-        NextButton(alsoOnclick = {
-            number = textValue.toFloatOrNull() ?: 0.0f
-            textValue = ""
-            when (question.numberQuestionSubject) {
-                NumberQuestionSubject.Weight -> {
-                    viewModel.updateUserWeight(number)
-                    Log.d("weight q", "weight submitted: $number")
-                }
+        if (textValue.consistsOfOnlyDigits() && !textValue.isEmpty()) {
+            NextButton(
+                alsoOnclick = {
+                    number = textValue.toFloatOrNull() ?: 0.0f
+                    textValue = ""
+                    when (question.numberQuestionSubject) {
+                        NumberQuestionSubject.Weight -> {
+                            viewModel.updateUserWeight(number)
+                            Log.d("weight q", "weight submitted: $number")
+                        }
 
-                NumberQuestionSubject.Height -> {
-                    Log.d("height q", "height submitted: $number")
-                    viewModel.updateUserHeight(number)
-                }
+                        NumberQuestionSubject.Height -> {
+                            Log.d("height q", "height submitted: $number")
+                            viewModel.updateUserHeight(number)
+                        }
 
-                NumberQuestionSubject.Age -> {
-                    Log.d("age q", "age submitted: $number")
-                    viewModel.updateUserAge(number.toInt())
-                }
-            }
-        })
+                        NumberQuestionSubject.Age -> {
+                            Log.d("age q", "age submitted: $number")
+                            viewModel.updateUserAge(number.toInt())
+                        }
+                    }
+                },
+                viewModel = viewModel
+            )
+        } else {
+            Text(
+                text = "You can have only digits here and you must submit a value!",
+                textAlign = TextAlign.Center
+            )
+        }
 
     }
 }
 
 
 @Composable
-fun <T>SingleSelectChoiceBubble(
+fun <T> SingleSelectChoiceBubble(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     stringToShow: String,
-    selectedOption:T,
-    myOption:T
+    selectedOption: T,
+    myOption: T
 ) {
-    //var selected by rememberSaveable { mutableStateOf(myOption==selectedOption) }
-    val selected = (selectedOption==myOption)
+    val selected = (selectedOption == myOption)
 
     Button(
         shape = RoundedCornerShape(36.dp),
@@ -284,9 +317,9 @@ fun <T>SingleSelectChoiceBubble(
             onClick()
         },
         colors = ButtonDefaults.buttonColors(
-            containerColor = if(selected){
+            containerColor = if (selected) {
                 colorScheme.inversePrimary
-            }else{
+            } else {
                 colorScheme.primary
             }
         )
@@ -298,7 +331,6 @@ fun <T>SingleSelectChoiceBubble(
 }
 
 
-
 @Composable
 fun MultiSelectChoiceBubble(
     modifier: Modifier = Modifier,
@@ -306,7 +338,7 @@ fun MultiSelectChoiceBubble(
     stringToShow: String,
     initialSelected: Boolean
 ) {
-    var selected by rememberSaveable { mutableStateOf(initialSelected)}
+    var selected by rememberSaveable { mutableStateOf(initialSelected) }
 
 
     Button(
@@ -317,9 +349,9 @@ fun MultiSelectChoiceBubble(
             onClick()
         },
         colors = ButtonDefaults.buttonColors(
-            containerColor = if(selected){
+            containerColor = if (selected) {
                 colorScheme.inversePrimary
-            }else{
+            } else {
                 colorScheme.primary
             }
         )
@@ -399,10 +431,9 @@ fun MultipleChoiceScreen(
             alsoOnclick = {
                 Log.d("goals q", "goals submitted were $goals")
                 viewModel.updateUserGoals(goals)
-                if (quizHandler.onLastQuestion()) {
-                    quizHandler.endQuizFunction()
-                }
-            }
+
+            },
+            viewModel = viewModel
         )
     }
 
@@ -411,17 +442,20 @@ fun MultipleChoiceScreen(
 
 
 @Composable
-fun NextButton(alsoOnclick: () -> Unit, modifier: Modifier = Modifier) {
+fun NextButton(
+    alsoOnclick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: UserInitViewModel
+) {
     Button(
         onClick = {
             Log.d("nextQuiz", "Next button was clicked")
             alsoOnclick()
-            if (quizHandler.nextQuestion() == -1) {
+            if (!viewModel.quizHandler.nextQuestion()) {//nextQuestion returns true if there is a next question, false if not. Also increments current index if possible
                 Log.d("navigation", "no next question! will try to move on")
-                    quizHandler.endQuizFunction()
-                Log.d("navigation", "got past end quiz function call")
-
+                viewModel.onQuizFinished()
             }
+            Log.d("navigation", "got past end quiz function call")
 
             Log.d("nextQuiz", "also on click executed")
         },
@@ -447,9 +481,7 @@ fun QuizScreenPreview() {
         QuizScreen(
             modifier = Modifier.fillMaxSize(),
             userInitViewModel = viewModel(),
-            quizHandlerGiven = QuizHandler(
-                endQuizFunction = { Log.e("quiz Info", "quiz ended") }
-            ),
+            endQuizFunction = {}
         )
     }
 }

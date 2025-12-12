@@ -7,9 +7,11 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,6 +25,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -37,10 +40,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -50,6 +55,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,19 +67,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import coil3.compose.AsyncImage
 import com.example.gymappia.R
-import com.example.gymappia.data.ExerciseApiResponse
 import com.example.gymappia.data.FoodProduct
 import com.example.gymappia.data.NutrimentsInServing
 import com.example.gymappia.data.roomClasses.MealType
 
 import com.example.gymappia.model.AddItemViewModel
 import com.example.gymappia.model.Day
+import com.example.gymappia.model.Workout
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -191,43 +200,116 @@ fun AddItemSearchBar(onSearch: (String) -> Unit, hint: String) {
 fun AddExerciseScreen(
     modifier: Modifier = Modifier,
     viewModel: AddItemViewModel = viewModel(),
-    navigateToWorkoutFocus: () -> Unit
+    goBackToDay:()->Unit,
+    day: LocalDateTime,
+    toShow: Workout?
 ) {
 
-    Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = stringResource(R.string.add_exercise_search),
-            style = MaterialTheme.typography.headlineMedium
-        )
-        AddItemSearchBar(
-            onSearch = { query -> viewModel.exerciseSearch(query) },
-            hint = stringResource(R.string.add_exercise_search)
-        )
-        if (viewModel.exerciseSearchIsLoading) {
-            LoadingScreen(modifier = modifier.weight(1f))
+    var userEnteredWorkoutName by rememberSaveable { mutableStateOf(toShow?.workoutName?:"")}
+
+    var repsTextValue by rememberSaveable { mutableStateOf(toShow?.repetitions?.toString()?:"")}
+
+    var weightUsedTextValue by rememberSaveable {mutableStateOf(toShow?.weightUsed?.toString()?:"") }
+
+    var parentSetTextValue by rememberSaveable { mutableStateOf(toShow?.setNumber?.toString()?:"")}
+
+    Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Row() {
+            Text(
+                text = "Workout name: "
+            )
+            OutlinedTextField(
+                value = userEnteredWorkoutName,
+                onValueChange = {userEnteredWorkoutName = it},
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                )
+            )
+        }
+        Row() {
+            Text(
+                text = "Repetitions: "
+            )
+            OutlinedTextField(
+                value = repsTextValue,
+                onValueChange = {newVal->
+                    repsTextValue = newVal
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                )
+            )
+        }
+        Row() {
+            Text(
+                text = "Weight used: "
+            )
+            OutlinedTextField(
+                value = weightUsedTextValue,
+                onValueChange = {newVal->
+                    weightUsedTextValue = newVal
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                )
+            )
+        }
+        Row() {
+            Text(
+                text = "Set: "
+            )
+            OutlinedTextField(
+                value = parentSetTextValue,
+                onValueChange = {newVal->
+                    parentSetTextValue = newVal
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                )
+            )
+        }
+        var canPass = true
+        if(!parentSetTextValue.consistsOfOnlyDigits()){
+            Text("The set must be a number!")
+            canPass = false
         }
 
+        if(!weightUsedTextValue.consistsOfOnlyDigits()){
+            Text("The weight must be a number!")
+            canPass = false
+        }
 
-        LazyColumn {
-            items(viewModel.exerciseSearchResponse) { workout ->
-                Button(onClick = {
-                    viewModel.selectedWorkout = workout
-                    navigateToWorkoutFocus()
-                }) {
-                    Row {
-                        AsyncImage(
-                            model = workout.imageUrl,
-                            placeholder = painterResource(R.drawable.image_not_found),
-                            contentDescription = workout.name + " image"
-                        )
-                        Spacer(modifier = Modifier.size(4.dp))
-                        Text(text = workout.name)
-                    }
-                }
+        if(!repsTextValue.consistsOfOnlyDigits()){
+            Text("The reps must be a number!")
+            canPass = false
+        }
+        if(canPass) {
+            SmallFloatingActionButton(
+                onClick = {
+                    Log.d("add workout", "search button clicked")
 
+                    viewModel.insertWorkout(
+                        name = userEnteredWorkoutName,
+                        reps = repsTextValue.toIntOrNull()?:0,
+                        day = day,
+                        parentSet = parentSetTextValue.toIntOrNull()?:1,
+                        weight = weightUsedTextValue.toFloatOrNull()?:0.0f
+                    )
+                    goBackToDay()
+                },
+                shape = shapes.small,
+                containerColor = colorScheme.secondaryContainer,
+                contentColor = colorScheme.secondary
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Add, contentDescription = "add workout"
+                )
             }
         }
-
     }
 }
 
@@ -250,63 +332,6 @@ fun LoadingScreen(
                 .padding(8.dp)
                 .background(color = colorScheme.primaryContainer)
         )
-    }
-}
-
-
-@Composable
-fun WorkoutFocusScreen(
-    modifier: Modifier = Modifier,
-    toShow: ExerciseApiResponse?,
-    viewModel: AddItemViewModel = viewModel()
-) {
-    if (toShow != null) {
-        var textFieldValue by rememberSaveable { mutableStateOf("") }
-        var numberOfReps by rememberSaveable { mutableIntStateOf(0) }
-        Column(modifier = modifier.fillMaxSize()) {
-            AsyncImage(
-                model = toShow.imageUrl,
-                placeholder = painterResource(R.drawable.image_not_found),
-                contentDescription = "image of ${toShow.name}"
-            )
-            Card(
-                shape = shapes.medium,
-                modifier = Modifier
-                    .background(colorScheme.secondaryContainer)
-                    .padding(8.dp)
-            ) {
-                Column {
-                    Text("Name: ${toShow.name}")
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Reps: ")
-                        TextField(
-                            value = textFieldValue, onValueChange = {
-                                textFieldValue = it
-                                numberOfReps = it.toIntOrNull() ?: 0
-                            })
-                    }
-
-                    SmallFloatingActionButton(
-                        onClick = {
-                            Log.d("add workout", "search button clicked")
-                            viewModel.insertWorkout(
-                                name = toShow.name, reps = numberOfReps, day = LocalDateTime.now()
-                            )
-                        },
-                        shape = shapes.small,
-                        containerColor = colorScheme.secondaryContainer,
-                        contentColor = colorScheme.secondary
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Add, contentDescription = "add workout"
-                        )
-                    }
-                }
-            }
-
-        }
     }
 }
 
@@ -338,6 +363,7 @@ enum class ItemType {
     BarcodeFood, OtherFood, Exercise
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodFocusScreen(
     modifier: Modifier = Modifier,
@@ -363,6 +389,8 @@ fun FoodFocusScreen(
             val fatIn100 = toShow.nutriments.fat_100g
             val carbsIn100 = toShow.nutriments.carbohydrates_100g
             val sugarIn100 = toShow.nutriments.sugars_100g
+
+            val interactionSource = remember { MutableInteractionSource() }
             Column(
                 modifier = modifier
                     .fillMaxSize()
@@ -402,18 +430,32 @@ fun FoodFocusScreen(
                         ) {
                             Row {
                                 Text("Per : ")
-                                OutlinedTextField(
+
+                                BasicTextField(
                                     value = textValOfServing,
                                     onValueChange = {
                                         textValOfServing = it
-                                        numberValOfServing =
-                                            textValOfServing.toFloatOrNull() ?: 100f
+                                        if(textValOfServing.consistsOfOnlyDigits()){
+                                            numberValOfServing = textValOfServing.toFloatOrNull()?:0f
+                                        }
                                     },
                                     singleLine = true,
                                     modifier = Modifier
-                                        .heightIn(min = 36.dp, max = 40.dp)
+                                        .heightIn(min = 36.dp, max =40.dp)
                                         .widthIn(min = 60.dp)
-                                )
+                                        .padding(0.dp),
+                                    textStyle = LocalTextStyle.current
+                                ){innerField->
+                                    OutlinedTextFieldDefaults.DecorationBox(
+                                        value = textValOfServing,
+                                        innerTextField = innerField,
+                                        enabled = true,
+                                        singleLine = true,
+                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                                        visualTransformation = VisualTransformation.None,
+                                        interactionSource = interactionSource
+                                    )
+                                }
                             }
                         }
                     }
@@ -541,6 +583,7 @@ fun FoodFocusScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemFocusScreenPrev(modifier: Modifier = Modifier, type: ItemType) {
     Column(
@@ -551,6 +594,7 @@ fun ItemFocusScreenPrev(modifier: Modifier = Modifier, type: ItemType) {
 
         when (type) {
             ItemType.BarcodeFood -> {
+                val interactionSource = remember { MutableInteractionSource() }
                 Column(
                     modifier = modifier
                         .fillMaxSize()
@@ -589,18 +633,32 @@ fun ItemFocusScreenPrev(modifier: Modifier = Modifier, type: ItemType) {
                             ) {
                                 Row {
                                     Text("Per : ")
-                                    OutlinedTextField(
+
+                                    BasicTextField(
                                         value = textValOfServing,
                                         onValueChange = {
                                             textValOfServing = it
-                                            numberValOfServing =
-                                                textValOfServing.toFloatOrNull() ?: 100f
+                                            if(textValOfServing.consistsOfOnlyDigits()){
+                                                numberValOfServing = textValOfServing.toFloatOrNull()?:0f
+                                            }
                                         },
                                         singleLine = true,
                                         modifier = Modifier
-                                            .heightIn(min = 36.dp, max = 40.dp)
+                                            .heightIn(min = 36.dp, max =40.dp)
                                             .widthIn(min = 60.dp)
-                                    )
+                                            .padding(0.dp),
+                                        textStyle = LocalTextStyle.current
+                                    ){innerField->
+                                        OutlinedTextFieldDefaults.DecorationBox(
+                                            value = textValOfServing,
+                                            innerTextField = innerField,
+                                            enabled = true,
+                                            singleLine = true,
+                                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                                            visualTransformation = VisualTransformation.None,
+                                            interactionSource = interactionSource
+                                        )
+                                    }
                                 }
                             }
                         }
