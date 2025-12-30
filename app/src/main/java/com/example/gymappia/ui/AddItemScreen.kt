@@ -51,6 +51,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -72,6 +74,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import coil3.compose.AsyncImage
@@ -96,6 +99,7 @@ fun AddFoodScreen(
     navigateToFoodFocus: () -> Unit
 ) {
     val currentActivity = LocalActivity.current
+    val isJobLoading by viewModel.jobLoading.collectAsStateWithLifecycle()
 
     Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -125,33 +129,44 @@ fun AddFoodScreen(
                 )
             }
         }
-        if (viewModel.foodCodeSearchIsLoading || viewModel.foodQuerySearchIsLoading) {
-            LoadingScreen(modifier = modifier.weight(1f))
-        }else {
-            LazyColumn {
-                items(viewModel.foodQuerySearchResponse) { food ->
-                    Button(
-                        onClick = {
-                            viewModel.selectedFood = food
-                            navigateToFoodFocus()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row {
-                            AsyncImage(
-                                model = food.image_url,
-                                placeholder = painterResource(R.drawable.image_not_found),
-                                contentDescription = food.product_name + " image"
-                            )
-                            Spacer(modifier = Modifier.size(4.dp))
-                            Log.d("food prod", viewModel.foodQuerySearchResponse.toString())
-                            Text(text = food.product_name)
-                        }
-                    }
 
+        viewModel.foodCodeSearchResponse?.let {foodProduct ->
+            viewModel.selectedFood = foodProduct
+            navigateToFoodFocus()
+        }
+
+        if (isJobLoading) {
+            LoadingScreen(modifier = modifier.weight(1f))
+        } else {
+            if (viewModel.foodQuerySearchResponse.isNotEmpty()){
+                LazyColumn {
+                    items(viewModel.foodQuerySearchResponse) { food ->
+                        Button(
+                            onClick = {
+                                viewModel.selectedFood = food
+                                navigateToFoodFocus()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row {
+                                AsyncImage(
+                                    model = food.image_url,
+                                    placeholder = painterResource(R.drawable.image_not_found),
+                                    contentDescription = food.product_name + " image"
+                                )
+                                Spacer(modifier = Modifier.size(4.dp))
+                                Log.d("food prod", viewModel.foodQuerySearchResponse.toString())
+                                Text(text = food.product_name)
+                            }
+                        }
+
+                    }
                 }
+            }else{
+                FailureScreen(modifier = modifier.weight(1f))
             }
         }
+
     }
 }
 
@@ -183,7 +198,8 @@ fun AddItemSearchBar(onSearch: (String) -> Unit, hint: String) {
                     keyboardController?.hide()
                     onSearch(searchQuery)
 
-                }))
+                })
+        )
         IconButton(onClick = {
             onSearch(searchQuery)
             keyboardController?.hide()
@@ -200,27 +216,39 @@ fun AddItemSearchBar(onSearch: (String) -> Unit, hint: String) {
 fun AddExerciseScreen(
     modifier: Modifier = Modifier,
     viewModel: AddItemViewModel = viewModel(),
-    goBackToDay:()->Unit,
+    goBackToDay: () -> Unit,
     day: LocalDateTime,
     toShow: Workout?
 ) {
 
-    var userEnteredWorkoutName by rememberSaveable { mutableStateOf(toShow?.workoutName?:"")}
+    var userEnteredWorkoutName by rememberSaveable { mutableStateOf(toShow?.workoutName ?: "") }
 
-    var repsTextValue by rememberSaveable { mutableStateOf(toShow?.repetitions?.toString()?:"")}
+    var repsTextValue by rememberSaveable { mutableStateOf(toShow?.repetitions?.toString() ?: "") }
 
-    var weightUsedTextValue by rememberSaveable {mutableStateOf(toShow?.weightUsed?.toString()?:"") }
+    var weightUsedTextValue by rememberSaveable {
+        mutableStateOf(
+            toShow?.weightUsed?.toString() ?: ""
+        )
+    }
 
-    var parentSetTextValue by rememberSaveable { mutableStateOf(toShow?.setNumber?.toString()?:"")}
+    var parentSetTextValue by rememberSaveable {
+        mutableStateOf(
+            toShow?.setNumber?.toString() ?: ""
+        )
+    }
 
-    Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
         Row() {
             Text(
                 text = "Workout name: "
             )
             OutlinedTextField(
                 value = userEnteredWorkoutName,
-                onValueChange = {userEnteredWorkoutName = it},
+                onValueChange = { userEnteredWorkoutName = it },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
@@ -233,7 +261,7 @@ fun AddExerciseScreen(
             )
             OutlinedTextField(
                 value = repsTextValue,
-                onValueChange = {newVal->
+                onValueChange = { newVal ->
                     repsTextValue = newVal
                 },
                 keyboardOptions = KeyboardOptions(
@@ -248,7 +276,7 @@ fun AddExerciseScreen(
             )
             OutlinedTextField(
                 value = weightUsedTextValue,
-                onValueChange = {newVal->
+                onValueChange = { newVal ->
                     weightUsedTextValue = newVal
                 },
                 keyboardOptions = KeyboardOptions(
@@ -263,7 +291,7 @@ fun AddExerciseScreen(
             )
             OutlinedTextField(
                 value = parentSetTextValue,
-                onValueChange = {newVal->
+                onValueChange = { newVal ->
                     parentSetTextValue = newVal
                 },
                 keyboardOptions = KeyboardOptions(
@@ -273,31 +301,31 @@ fun AddExerciseScreen(
             )
         }
         var canPass = true
-        if(!parentSetTextValue.consistsOfOnlyDigits()){
+        if (!parentSetTextValue.consistsOfOnlyDigits()) {
             Text("The set must be a number!")
             canPass = false
         }
 
-        if(!weightUsedTextValue.consistsOfOnlyDigits()){
+        if (!weightUsedTextValue.consistsOfOnlyDigits()) {
             Text("The weight must be a number!")
             canPass = false
         }
 
-        if(!repsTextValue.consistsOfOnlyDigits()){
+        if (!repsTextValue.consistsOfOnlyDigits()) {
             Text("The reps must be a number!")
             canPass = false
         }
-        if(canPass) {
+        if (canPass) {
             SmallFloatingActionButton(
                 onClick = {
                     Log.d("add workout", "search button clicked")
 
                     viewModel.insertWorkout(
                         name = userEnteredWorkoutName,
-                        reps = repsTextValue.toIntOrNull()?:0,
+                        reps = repsTextValue.toIntOrNull() ?: 0,
                         day = day,
-                        parentSet = parentSetTextValue.toIntOrNull()?:1,
-                        weight = weightUsedTextValue.toFloatOrNull()?:0.0f
+                        parentSet = parentSetTextValue.toIntOrNull() ?: 1,
+                        weight = weightUsedTextValue.toFloatOrNull() ?: 0.0f
                     )
                     goBackToDay()
                 },
@@ -335,28 +363,58 @@ fun LoadingScreen(
     }
 }
 
+@Composable
+fun FailureScreen(
+    modifier: Modifier = Modifier
+){
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "None found, sorry!", style = MaterialTheme.typography.headlineLarge
+        )
+        Text(
+            text = " G A M E   O V E R \n .  . \n  _-_ "
+        )
+    }
+}
+
 
 fun searchFoodsByBarcode(activity: Activity?, viewModel: AddItemViewModel): FoodProduct? {
     if (activity == null) {
         return null
     }
-    val options = GmsBarcodeScannerOptions.Builder().setBarcodeFormats(
+    val options = GmsBarcodeScannerOptions.Builder()
+        .setBarcodeFormats(
             Barcode.FORMAT_EAN_13, Barcode.FORMAT_EAN_8, Barcode.FORMAT_UPC_A
-        ).build()
+        )
+        .enableAutoZoom()
+        .build()
     val scanner = GmsBarcodeScanning.getClient(activity, options)
     var response: FoodProduct? = null
     scanner.startScan().addOnSuccessListener { barcode ->
-            val rawValue: String = barcode.rawValue ?: ""
+        val rawValue: String = barcode.rawValue ?: ""
+        if (rawValue != "") {
             Log.d("barcode search", "barcode = $rawValue")
             viewModel.barcodeFoodSearch(rawValue)
             if (viewModel.errorMessage != null) {
                 response = viewModel.foodCodeSearchResponse
             } else {
-                Log.d("barcode food search", "${viewModel.errorMessage}")
+                Log.d("barcode food search", "error message is ${viewModel.errorMessage}, no error")
                 viewModel.clearErrorMessage()
             }
+        } else {
+            Log.d("barcode search", "did not get barcode")
         }
-    return response
+    }
+    var loading = viewModel.jobLoading.value
+    while (loading){
+        loading = viewModel.jobLoading.value
+    }
+    //only continue when done loading
+    return viewModel.foodCodeSearchResponse
 }
 
 enum class ItemType {
@@ -370,7 +428,7 @@ fun FoodFocusScreen(
     toShow: FoodProduct?,
     addItemAddViewModel: AddItemViewModel,
     day: LocalDateTime,
-    goBackToDay:()->Unit
+    goBackToDay: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -435,23 +493,27 @@ fun FoodFocusScreen(
                                     value = textValOfServing,
                                     onValueChange = {
                                         textValOfServing = it
-                                        if(textValOfServing.consistsOfOnlyDigits()){
-                                            numberValOfServing = textValOfServing.toFloatOrNull()?:0f
+                                        if (textValOfServing.consistsOfOnlyDigits()) {
+                                            numberValOfServing =
+                                                textValOfServing.toFloatOrNull() ?: 0f
                                         }
                                     },
                                     singleLine = true,
                                     modifier = Modifier
-                                        .heightIn(min = 36.dp, max =40.dp)
+                                        .heightIn(min = 36.dp, max = 40.dp)
                                         .widthIn(min = 60.dp)
                                         .padding(0.dp),
                                     textStyle = LocalTextStyle.current
-                                ){innerField->
+                                ) { innerField ->
                                     OutlinedTextFieldDefaults.DecorationBox(
                                         value = textValOfServing,
                                         innerTextField = innerField,
                                         enabled = true,
                                         singleLine = true,
-                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                                        contentPadding = PaddingValues(
+                                            horizontal = 4.dp,
+                                            vertical = 0.dp
+                                        ),
                                         visualTransformation = VisualTransformation.None,
                                         interactionSource = interactionSource
                                     )
@@ -638,23 +700,27 @@ fun ItemFocusScreenPrev(modifier: Modifier = Modifier, type: ItemType) {
                                         value = textValOfServing,
                                         onValueChange = {
                                             textValOfServing = it
-                                            if(textValOfServing.consistsOfOnlyDigits()){
-                                                numberValOfServing = textValOfServing.toFloatOrNull()?:0f
+                                            if (textValOfServing.consistsOfOnlyDigits()) {
+                                                numberValOfServing =
+                                                    textValOfServing.toFloatOrNull() ?: 0f
                                             }
                                         },
                                         singleLine = true,
                                         modifier = Modifier
-                                            .heightIn(min = 36.dp, max =40.dp)
+                                            .heightIn(min = 36.dp, max = 40.dp)
                                             .widthIn(min = 60.dp)
                                             .padding(0.dp),
                                         textStyle = LocalTextStyle.current
-                                    ){innerField->
+                                    ) { innerField ->
                                         OutlinedTextFieldDefaults.DecorationBox(
                                             value = textValOfServing,
                                             innerTextField = innerField,
                                             enabled = true,
                                             singleLine = true,
-                                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                                            contentPadding = PaddingValues(
+                                                horizontal = 4.dp,
+                                                vertical = 0.dp
+                                            ),
                                             visualTransformation = VisualTransformation.None,
                                             interactionSource = interactionSource
                                         )

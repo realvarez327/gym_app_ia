@@ -2,6 +2,7 @@ package com.example.gymappia.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 
 import androidx.core.content.edit
 
@@ -11,7 +12,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlin.collections.mutableListOf
 
 private const val SETTINGS_PREF_NAME = "userPreferences"
 private const val GOALS_KEY = "goals"
@@ -28,35 +28,59 @@ private const val WEIGHT_KEY = "weight"
 private const val HEIGHT_KEY = "height"
 private const val CALORIES_KEY = "calories"
 
+private const val INITIALIZED_KEY = "initialized"
+
+private const val TAG ="user_settings_repo"
 object UserSettingsRepository {
 
     fun init(context: Context) {
-        sharedPreferences = context.applicationContext.getSharedPreferences(
-            SETTINGS_PREF_NAME,
-            Context.MODE_PRIVATE
-        )
-        sharedPreferences.edit(commit = true) { clear() }
+        Log.d(TAG,"init called")
+        if(!isInitialized()){
+            sharedPreferences = context.applicationContext.getSharedPreferences(
+                SETTINGS_PREF_NAME,
+                Context.MODE_PRIVATE
+            )
+            Log.d(TAG, "found that repo was not initialized \n continuing")
+            //code below is used to clear shared preferences, start from scratch
+//            sharedPreferences.edit(commit = true) { clear() }
+//
+//            sharedPreferences.edit { clear() }
 
-        sharedPreferences.edit { clear() }
+            _nameFlow.value = getName()
+            _genderFlow.value = loadGender()
+            _goalsFlow.value = loadGoals()
+            _hourFlow.value = loadHour()
+            _minuteFlow.value = loadMinute()
+            _heightFlow.value = loadHeight()
+            _ageFlow.value = loadAge()
+            _weightFlow.value = loadWeight()
+            _dailyCaloriesFlow.value = loadCalories()
+            _dailyProteinFlow.value = loadProtein()
+            _dailySugarFlow.value = loadDailySugar()
+            _dailyFatFlow.value = loadDailyFat()
+            _dailyCarbsFlow.value = loadDailyCarbs()
 
-        _nameFlow.value = loadName()
-        _genderFlow.value = loadGender()
-        _goalsFlow.value = loadGoals()
-        _hourFlow.value = loadHour()
-        _minuteFlow.value = loadMinute()
-        _heightFlow.value = loadHeight()
-        _ageFlow.value = loadAge()
-        _weightFlow.value = loadWeight()
-        _dailyCaloriesFlow.value = loadCalories()
-        _dailyProteinFlow.value = loadProtein()
-        _dailySugarFlow.value = loadDailySugar()
-        _dailyFatFlow.value = loadDailyFat()
-        _dailyCarbsFlow.value = loadDailyCarbs()
+            Log.d(TAG,"loading in values")
+            sharedPreferences.edit{
+                putBoolean(INITIALIZED_KEY, true)
+            }
+            Log.d(TAG, "shared preferences now knows that its initialized")
+        }
+
     }
 
     private val gson = Gson()
     private lateinit var sharedPreferences: SharedPreferences
 
+
+
+    fun isInitialized():Boolean{
+        if(::sharedPreferences.isInitialized) {
+            return sharedPreferences.getBoolean(INITIALIZED_KEY, false)
+        }else{
+            return false
+        }
+    }
     private val _nameFlow = MutableStateFlow("Unknown")
     val nameFlow: StateFlow<String> = _nameFlow
 
@@ -67,7 +91,7 @@ object UserSettingsRepository {
         _nameFlow.value = name
     }
 
-    fun loadName(): String {
+    fun getName(): String {
         return sharedPreferences.getString(NAME_KEY, "Unknown") ?: "Unknown"
     }
 
@@ -112,7 +136,7 @@ object UserSettingsRepository {
         _goalsFlow.value = newGoals
     }
 
-    private val _hourFlow = MutableStateFlow(-1)
+    private val _hourFlow = MutableStateFlow(8)
     val hourFlow: StateFlow<Int> = _hourFlow
 
     fun putHour(newHour: Int) {
@@ -123,10 +147,10 @@ object UserSettingsRepository {
     }
 
     fun loadHour(): Int {
-        return sharedPreferences.getInt(NOTIF_HOUR_KEY, -1)
+        return sharedPreferences.getInt(NOTIF_HOUR_KEY, 8)
     }
 
-    private val _minuteFlow = MutableStateFlow(0)
+    private val _minuteFlow = MutableStateFlow(30)
     val minuteFlow: StateFlow<Int> = _minuteFlow
 
     fun putMinute(newMinute: Int) {
@@ -137,7 +161,7 @@ object UserSettingsRepository {
     }
 
     fun loadMinute(): Int {
-        return sharedPreferences.getInt(NOTIF_MINUTE_KEY, 0)
+        return sharedPreferences.getInt(NOTIF_MINUTE_KEY, 30)
     }
 
     private val _heightFlow = MutableStateFlow(0.0f)

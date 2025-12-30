@@ -7,7 +7,7 @@ object SharedHttpClientProvider {
         OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
-                    .header("User-Agent", "Gym IA App 1.0")
+                    .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36")
                     .build()
                 chain.proceed(request)
             }

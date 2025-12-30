@@ -16,78 +16,118 @@ import com.example.gymappia.data.NutrimentsInServing
 import com.example.gymappia.data.roomClasses.WorkoutDao
 import com.example.gymappia.data.roomClasses.WorkoutEntity
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class AddItemViewModel (
-    private val foodDao: FoodDao,
-    private val workoutDao: WorkoutDao
-): ViewModel(){
+class AddItemViewModel(
+    private val foodDao: FoodDao, private val workoutDao: WorkoutDao
+) : ViewModel() {
     //api, search
     var foodQuerySearchResponse by mutableStateOf<List<FoodProduct>>(emptyList())
         private set
 
-    var foodQuerySearchIsLoading by mutableStateOf(false)
 
     var foodCodeSearchResponse by mutableStateOf<FoodProduct?>(null)
         private set
 
-    var foodCodeSearchIsLoading by mutableStateOf(false)
 
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
 
     fun barcodeFoodSearch(
-        codeScanned:String
-    ){
+        codeScanned: String
+    ) {
+        Log.d("barcode scanning", "code scanned = $codeScanned .")
         searchJob?.cancel()
         foodCodeSearchResponse = null
+        _jobLoading.value = true
+        errorMessage = null
         searchJob = viewModelScope.launch {
-            foodCodeSearchIsLoading=true
-            try{
-                foodCodeSearchResponse = FoodApiClient.apiService.getFoodByBarcode(codeScanned).products?.firstOrNull()
-            }catch (e: Exception){
-                Log.e("barcode scanning",e.message.toString())
-                errorMessage = e.message
+            try {
+                val foodResponse = FoodApiClient.apiService.getFoodByBarcode(codeScanned)
+                if (foodResponse.isSuccessful) {
+                    Log.d("barcode scanning", "response is successful, L52")
+                    Log.d("barcode scanning", "status code = ${foodResponse.raw().code}")
+                    Log.d("barcode scanning", "response = ${foodCodeSearchResponse.toString()}")
+                    val body = foodResponse.body()
+                    Log.d("barcode scanning", "body =  ${body.toString()}")
+                    if (body != null && body.product!=null) {
+                        foodCodeSearchResponse = body.product
+                        Log.d(
+                            "barcode scanning",
+                            "food found = ${foodCodeSearchResponse.toString()}"
+                        )
+                    } else {
+                        Log.d("barcode scanning", "body is empty or products list is empty")
+                    }
+                } else {
+                    errorMessage = "Error! Code : ${foodResponse.code()} and body = ${
+                        foodResponse.errorBody().toString()
+                    }"
+                    Log.d(
+                        "barcode scanning", "error, Code : ${foodResponse.code()} and body = ${
+                            foodResponse.errorBody().toString()
+                        }"
+                    )
+                }
+
+            } catch (e: Exception) {
+
+                errorMessage = e.localizedMessage
+                Log.e("barcode scanning", "exception -> ${e.localizedMessage}")
                 foodCodeSearchResponse = null
-            }finally {
-                foodCodeSearchIsLoading = false
+            } finally {
+                _jobLoading.value = false
             }
         }
     }
 
     private var searchJob: Job? = null
 
+    private val _jobLoading = MutableStateFlow(false)
+    val jobLoading: StateFlow<Boolean> = _jobLoading
     fun queryFoodSearch(
-        query:String
-    ){
+        query: String
+    ) {
         searchJob?.cancel()
         Log.d("food search", "queryFoodSearch called with $query")
+        foodQuerySearchResponse = emptyList()
         searchJob = viewModelScope.launch {
-            foodQuerySearchResponse = emptyList()
-            foodQuerySearchIsLoading=true
-            try{
-                foodQuerySearchResponse = FoodApiClient.apiService.search(query).products?:emptyList()
+            _jobLoading.value = true
+//            foodQuerySearchIsLoading = true
+            try {
+                val queryResponse = FoodApiClient.apiService.search(query)
+                val body = queryResponse.body()
+                if (queryResponse.isSuccessful && body != null) {
+                    foodQuerySearchResponse = body.products ?: emptyList()
+                    Log.d("query search", "prods returned = $foodQuerySearchResponse")
+                } else {
+                    Log.d("query search", "response error = ${queryResponse.errorBody()}")
+                }
                 Log.d("food prod", foodQuerySearchResponse.toString())
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 errorMessage = e.message
-                Log.e("queryFoodSearch",e.message?:"error")
+                Log.e("queryFoodSearch", e.message ?: "error")
                 foodQuerySearchResponse = emptyList()
-            }finally {
+            } finally {
                 Log.d("queryFoodSearch", "done loading")
-                foodQuerySearchIsLoading = false
+//                foodQuerySearchIsLoading = false
+                _jobLoading.value = false
             }
         }
 
     }
 
 
-
-    fun clearErrorMessage(){
+    fun clearErrorMessage() {
         errorMessage = null
     }
+
     //room, add
     fun insertFoodFromProduct(
         given: FoodProduct,
@@ -100,7 +140,7 @@ class AddItemViewModel (
             mealType = mealType,
             servingSize = serving,
             foodName = given.product_name,
-            imageUrl = given.image_url?:"",
+            imageUrl = given.image_url ?: "",
             consumptionDateTime = day.toEpochSecond(ZoneOffset.UTC),
             proteinInServing = givenNutrimentsInServing.protein,
             carbsInServing = givenNutrimentsInServing.carbs,
@@ -115,13 +155,9 @@ class AddItemViewModel (
 
 
     fun insertWorkout(
-        name:String,
-        reps: Int,
-        day: LocalDateTime,
-        parentSet:Int,
-        weight: Float
-    ){
-        val toInsert: WorkoutEntity= WorkoutEntity(
+        name: String, reps: Int, day: LocalDateTime, parentSet: Int, weight: Float
+    ) {
+        val toInsert: WorkoutEntity = WorkoutEntity(
             exerciseName = name,
             dayOfWorkout = day.toEpochSecond(ZoneOffset.UTC),
             repetitions = reps,

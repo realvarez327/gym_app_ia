@@ -1,6 +1,8 @@
 package com.example.gymappia.data
 
 
+
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -10,7 +12,7 @@ interface FoodApi {
     suspend fun getFoodByBarcode(
         @Path("barcode") barcode:String,
         @Query("fields")fields:String ="code,image_url,nutriments,product_name,product_quantity,product_quantity_unit,status"
-    ): FoodApiResponse
+    ): Response<FoodApiBarcodeResponse>
 
     @GET("cgi/search.pl")
     suspend fun search(
@@ -19,5 +21,5 @@ interface FoodApi {
         @Query("search_simple") simpleSearch:Int? = 1,
         @Query("action")action:String? = "process",
         @Query("json")json:Int? = 1
-    ): FoodApiResponse
+    ): Response<FoodApiQueryResponse>
 }
