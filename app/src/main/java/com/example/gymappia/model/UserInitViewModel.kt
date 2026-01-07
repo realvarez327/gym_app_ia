@@ -37,6 +37,7 @@ class UserInitViewModel (): ViewModel() {
         UserSettingsRepository.putHeight(state.userHeight?:0.0f)
         UserSettingsRepository.putWeight(state.userWeight?:0.0f)
         UserSettingsRepository.saveGender(state.gender)
+        UserSettingsRepository.changeIfAskedForNotifs(state.askedUserForNotifRights?:false)
         //mifflin st. jeor formula
         if((state.userWeight!=null)
             &&(state.userHeight!=null)
@@ -118,6 +119,16 @@ class UserInitViewModel (): ViewModel() {
         _uiInitState.update { currentState ->
             currentState.copy(
                 goals = newGoals
+            )
+        }
+    }
+
+    fun updateUserNotifPermissionsAsked(askedOrNot: Boolean){
+
+        _uiInitState.update { currentState->
+            currentState.copy(
+                askedUserForNotifRights = askedOrNot
+
             )
         }
     }

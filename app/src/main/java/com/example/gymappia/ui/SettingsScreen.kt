@@ -1,11 +1,11 @@
 package com.example.gymappia.ui
 
 
+import android.app.NotificationManager
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.StringRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,51 +20,40 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePickerDefaults
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.example.gymappia.AppScreen
 import com.example.gymappia.R
 import com.example.gymappia.data.UserSettingsRepository
 import com.example.gymappia.model.FitnessGoal
+import com.example.gymappia.model.NotifScheduler
 import com.example.gymappia.ui.theme.GymAppIATheme
-import kotlin.collections.listOf
 
 enum class SettingOption(@StringRes val settingNameId: Int) {
     Preferences(settingNameId = R.string.preferences),
@@ -368,7 +357,7 @@ fun PreferencesManagingScreen(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotifTimeManagingScreen() {
+fun NotifsManagingScreen() {
     val initHour by UserSettingsRepository.hourFlow.collectAsState()
     val initMinute by UserSettingsRepository.minuteFlow.collectAsState()
     val timePickerState = rememberTimePickerState(
@@ -376,6 +365,8 @@ fun NotifTimeManagingScreen() {
         initialMinute = initMinute,
         is24Hour = true
     )
+    val context = LocalContext.current
+    val notifsAreAllowed = NotificationManagerCompat.from(context).areNotificationsEnabled()
 
 
     Column(
@@ -383,6 +374,18 @@ fun NotifTimeManagingScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        val textToShow = "You "+if(!notifsAreAllowed){
+            "do not "
+        }else{
+            ""
+        }+"have notifications enabled. To change this, visit your system settings."
+
+        Text(
+            text = textToShow,
+            modifier = Modifier.padding(bottom = 4.dp),
+            style = MaterialTheme.typography.titleSmall
+        )
+        Spacer(modifier = Modifier.weight(0.5f))
         Text(text = "Select when you would like to be reminded to log!")
         TimeInput(
             state = timePickerState,
@@ -396,6 +399,15 @@ fun NotifTimeManagingScreen() {
         Button(onClick = {
             UserSettingsRepository.putMinute(timePickerState.minute)
             UserSettingsRepository.putHour(timePickerState.hour)
+            if(notifsAreAllowed){
+                NotifScheduler.scheduleDailyNotif(
+                    context.applicationContext,
+                    hour = timePickerState.hour,
+                    minute = timePickerState.minute,
+                )
+            }else{
+                Toast.makeText(context, "We saved the new time, but notifications aren't allowed. We'll send them when they are", Toast.LENGTH_SHORT).show()
+            }
         }) {
             Text("Confirm selection")
         }
@@ -419,6 +431,13 @@ fun NotifTimeManagingScreenPrev() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        val textToShow = "You have notifications enabled.\nTo change this, visit your system settings."
+
+        Text(
+            text = textToShow,
+            modifier = Modifier.padding(bottom = 4.dp),
+            style = MaterialTheme.typography.titleSmall
+        )
         Text(text = "Select when you would like to be reminded to log!")
         TimeInput(
             state = timePickerState,

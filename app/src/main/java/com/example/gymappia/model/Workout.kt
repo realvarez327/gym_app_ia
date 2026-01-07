@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 
 data class Workout (
-
+    val id:Int,
     var workoutName:String = "",
     var repetitions:Int = 1,
     var parentDay: LocalDateTime,

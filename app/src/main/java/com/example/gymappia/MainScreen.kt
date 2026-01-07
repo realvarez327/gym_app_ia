@@ -48,7 +48,7 @@ import com.example.gymappia.model.WeekDayViewModelFactory
 import com.example.gymappia.ui.FoodFocusScreen
 import com.example.gymappia.ui.GoalsManagingScreen
 import com.example.gymappia.ui.LoadingScreen
-import com.example.gymappia.ui.NotifTimeManagingScreen
+import com.example.gymappia.ui.NotifsManagingScreen
 import com.example.gymappia.ui.PreferencesManagingScreen
 import com.example.gymappia.ui.WeekDayViewModel
 import com.example.gymappia.ui.WeeklyViewScreen
@@ -149,7 +149,6 @@ fun GymApp() {
         )
 
         if (UserSettingsRepository.isInitialized()) {
-            //todo fix
             Log.d("main_screen", "repo is initialized")
             val name: String = UserSettingsRepository.getName()
             val startDestination:String = if (name == "Unknown") {
@@ -209,7 +208,6 @@ fun GymApp() {
                             dayWeekVM.refreshWeek()
                         }
                         DailyViewScreen(
-                            day = dayWeekVM.daySelected,
                             dayWeekVM = dayWeekVM,
                             goToAddFood = {
                                 navController.navigate(
@@ -291,7 +289,7 @@ fun GymApp() {
                     }
 
                     composable(route = AppScreen.Notifications.name) {
-                        NotifTimeManagingScreen()
+                        NotifsManagingScreen()
                     }
 
                     composable(route = AppScreen.Goals.name) {

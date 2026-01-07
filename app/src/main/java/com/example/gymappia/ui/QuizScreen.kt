@@ -1,7 +1,13 @@
 package com.example.gymappia.ui
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +42,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 
@@ -45,18 +52,27 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.room.util.TableInfo
 import com.example.gymappia.data.QuestionsDataSource
+import com.example.gymappia.data.UserSettingsRepository
+import com.example.gymappia.data.YesOrNoResponse
 import com.example.gymappia.model.FitnessGoal
 import com.example.gymappia.model.Gender
+import com.example.gymappia.model.NotifHandler
+import com.example.gymappia.model.NotifScheduler
 import com.example.gymappia.model.NumberQuestionSubject
 import com.example.gymappia.model.SingleChoiceQuestionSubject
 import com.example.gymappia.model.UserInitViewModel
 import com.example.gymappia.ui.theme.GymAppIATheme
+import java.util.jar.Manifest
 
 
 fun String.consistsOfOnlyLetters(): Boolean {
@@ -69,9 +85,7 @@ fun String.consistsOfOnlyDigits(): Boolean {
 
 @Composable
 fun QuizScreen(
-    modifier: Modifier = Modifier,
-    userInitViewModel: UserInitViewModel,
-    endQuizFunction: () -> Unit
+    modifier: Modifier = Modifier, userInitViewModel: UserInitViewModel, endQuizFunction: () -> Unit
 ) {
     val questions = QuestionsDataSource.userStartQuestions
     val viewModel: UserInitViewModel = userInitViewModel
@@ -81,7 +95,7 @@ fun QuizScreen(
     val quizFinished by viewModel.isQuizFinished.collectAsStateWithLifecycle()
 
     LaunchedEffect(quizFinished) {
-        if(quizFinished) {
+        if (quizFinished) {
             endQuizFunction()
         }
     }
@@ -161,8 +175,7 @@ fun StringResponseSection(
                 alsoOnclick = {
                     viewModel.updateUserName(value)
                     Log.d("name q", "name submitted: $value")
-                },
-                viewModel = viewModel
+                }, viewModel = viewModel
             )
         } else {
             Text(
@@ -181,45 +194,147 @@ fun SingleChoiceSection(
     viewModel: UserInitViewModel,
 ) {
     //store gender
-    var selectedGender: Gender by rememberSaveable { mutableStateOf(Gender.Female) }
-    Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        QuestionTitle(question)
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = modifier.padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            //gender passed in is enum!
-            items(items = question.possibleAnswerChoices) { choice ->
-                if (choice is Gender) {
-                    Log.d("gender q", "choice I need to show is a Gender and it is $choice")
-                    SingleSelectChoiceBubble<Gender>(
-                        stringToShow = stringResource(choice.stringId),
-                        onClick = {
-                            selectedGender = choice
-                        },
-                        selectedOption = selectedGender,
-                        myOption = choice
-                    )
+    when (question.singleChooseSubject) {
+        SingleChoiceQuestionSubject.Gender -> {
+            var selectedGender: Gender by rememberSaveable { mutableStateOf(Gender.Female) }
+            Column(
+                modifier = modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                QuestionTitle(question)
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = modifier.padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    //gender passed in is enum!
+                    items(items = question.possibleAnswerChoices) { choice ->
+                        if (choice is Gender) {
+                            Log.d("gender q", "choice I need to show is a Gender and it is $choice")
+                            SingleSelectChoiceBubble<Gender>(
+                                stringToShow = stringResource(choice.stringId), onClick = {
+                                    selectedGender = choice
+                                }, selectedOption = selectedGender, myOption = choice
+                            )
 
+                        }
+                    }
+
+                }
+                NextButton(
+                    alsoOnclick = {
+                        viewModel.updateUserGender(selectedGender)
+                        Log.d("gender q", "gender submitted: ${selectedGender.name}")
+
+                    }, viewModel = viewModel
+                )
+            }
+        }
+
+        SingleChoiceQuestionSubject.Notifications -> {
+
+            val context = LocalContext.current
+
+            val notifPermissionsLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { isGranted ->
+                if (isGranted) {
+                    onNotifPermissionsGranted(
+                        context,
+                        UserSettingsRepository.hourFlow.value,
+                        UserSettingsRepository.minuteFlow.value
+                    )
+                } else {
+                    //denied
+                    Toast.makeText(context, "You will not receive notifications! \n You can change this in settings later", Toast.LENGTH_LONG).show()
                 }
             }
 
+            val permissionGranted = ContextCompat.checkSelfPermission(
+                context, android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!permissionGranted) {
+                var selectedOption: YesOrNoResponse by rememberSaveable {
+                    mutableStateOf(
+                        YesOrNoResponse.Yes
+                    )
+                }
+                Column(
+                    modifier = modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    QuestionTitle(question)
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        modifier = modifier.padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        //gender passed in is enum!
+                        items(items = question.possibleAnswerChoices) { choice ->
+                            if (choice is YesOrNoResponse) {
+                                SingleSelectChoiceBubble<YesOrNoResponse>(
+                                    stringToShow = stringResource(choice.stringID), onClick = {
+                                        selectedOption = choice
+                                    }, selectedOption = selectedOption, myOption = choice
+                                )
+                            }
+
+                        }
+                    }
+
+
+                    NextButton(
+                        alsoOnclick = {
+                            notifPermissionsLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                            viewModel.updateUserNotifPermissionsAsked(true)
+//                            if (selectedOption == YesOrNoResponse.Yes) {
+//                                onNotifPermissionsGranted()
+//                            }
+
+                        }, viewModel = viewModel
+                    )
+                }
+            } else {
+                Column(
+                    modifier = modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "For some reason, you already gave permissions to send notifications. You can remove this permission once set-up is done, in settings.",
+                        style = typography.displayMedium
+                    )
+                    Image(
+                        painter = painterResource(R.drawable.transparent_jim),
+                        contentDescription = "Jim"
+                    )
+                    NextButton(
+                        alsoOnclick = {
+                            viewModel.updateUserNotifPermissionsAsked(true)
+                        },
+
+                        viewModel = viewModel
+                    )
+                }
+            }
         }
 
-        NextButton(
-            alsoOnclick = {
-                when (question.singleChooseSubject) {
-                    SingleChoiceQuestionSubject.Gender -> viewModel.updateUserGender(selectedGender)
-                }
-                Log.d("gender q", "gender submitted: ${selectedGender.name}")
-
-            },
-            viewModel = viewModel
-        )
     }
+}
 
+
+fun onNotifPermissionsGranted(context: Context, notifHour: Int, notifMinute: Int) {
+    //context is not application
+    NotifHandler.registerLoggingChannelWithSystem(context.applicationContext)
+    NotifScheduler.scheduleDailyNotif(
+        context = context.applicationContext,
+        hour = notifHour,
+        minute = notifMinute
+    )
+    Toast.makeText(context, "Notifications are now enabled", Toast.LENGTH_SHORT).show()
 }
 
 
@@ -244,21 +359,15 @@ fun InputNumberSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
-                value = textValue,
-                singleLine = true,
-                colors = TextFieldDefaults.colors(
+                value = textValue, singleLine = true, colors = TextFieldDefaults.colors(
                     focusedContainerColor = colorScheme.surface,
                     unfocusedContainerColor = colorScheme.surface,
                     disabledContainerColor = colorScheme.surface,
-                ),
-                onValueChange = { newVal ->
+                ), onValueChange = { newVal ->
                     textValue = newVal
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(
+                }, keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number
-                ),
-                placeholder = { Text("0.0") }
-            )
+                ), placeholder = { Text("0.0") })
             Text(
                 text = stringResource(unitStringResource)
             )
@@ -286,8 +395,7 @@ fun InputNumberSection(
                             viewModel.updateUserAge(number.toInt())
                         }
                     }
-                },
-                viewModel = viewModel
+                }, viewModel = viewModel
             )
         } else {
             Text(
@@ -311,12 +419,9 @@ fun <T> SingleSelectChoiceBubble(
     val selected = (selectedOption == myOption)
 
     Button(
-        shape = RoundedCornerShape(36.dp),
-        modifier = modifier,
-        onClick = {
+        shape = RoundedCornerShape(36.dp), modifier = modifier, onClick = {
             onClick()
-        },
-        colors = ButtonDefaults.buttonColors(
+        }, colors = ButtonDefaults.buttonColors(
             containerColor = if (selected) {
                 colorScheme.inversePrimary
             } else {
@@ -342,13 +447,10 @@ fun MultiSelectChoiceBubble(
 
 
     Button(
-        shape = RoundedCornerShape(36.dp),
-        modifier = modifier,
-        onClick = {
+        shape = RoundedCornerShape(36.dp), modifier = modifier, onClick = {
             selected = !selected
             onClick()
-        },
-        colors = ButtonDefaults.buttonColors(
+        }, colors = ButtonDefaults.buttonColors(
             containerColor = if (selected) {
                 colorScheme.inversePrimary
             } else {
@@ -419,9 +521,7 @@ fun MultipleChoiceScreen(
                                 //not found
                                 goals.add(currentItem)
                             }
-                        },
-                        stringToShow = currentItem.name,
-                        initialSelected = false
+                        }, stringToShow = currentItem.name, initialSelected = false
                     )
                 }
             }
@@ -432,8 +532,7 @@ fun MultipleChoiceScreen(
                 Log.d("goals q", "goals submitted were $goals")
                 viewModel.updateUserGoals(goals)
 
-            },
-            viewModel = viewModel
+            }, viewModel = viewModel
         )
     }
 
@@ -443,9 +542,7 @@ fun MultipleChoiceScreen(
 
 @Composable
 fun NextButton(
-    alsoOnclick: () -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: UserInitViewModel
+    alsoOnclick: () -> Unit, modifier: Modifier = Modifier, viewModel: UserInitViewModel
 ) {
     Button(
         onClick = {
@@ -458,8 +555,7 @@ fun NextButton(
             Log.d("navigation", "got past end quiz function call")
 
             Log.d("nextQuiz", "also on click executed")
-        },
-        modifier = modifier
+        }, modifier = modifier
     ) {
         Row {
             Icon(
@@ -481,7 +577,6 @@ fun QuizScreenPreview() {
         QuizScreen(
             modifier = Modifier.fillMaxSize(),
             userInitViewModel = viewModel(),
-            endQuizFunction = {}
-        )
+            endQuizFunction = {})
     }
 }

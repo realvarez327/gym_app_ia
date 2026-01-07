@@ -19,4 +19,7 @@ WorkoutDao {
 
     @Delete
     suspend fun removeWorkout(workout: WorkoutEntity)
+
+    @Query("DELETE FROM workouts WHERE id=:givenId")
+    suspend fun deleteWorkoutById(givenId:Int)
 }

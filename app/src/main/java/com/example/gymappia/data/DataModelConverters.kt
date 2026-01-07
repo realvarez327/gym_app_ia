@@ -29,7 +29,8 @@ class DataModelConverters {
                 0,
                 ZoneId.systemDefault().rules.getOffset(LocalDateTime.now())
             ),
-            imageUrl = given.imageUrl
+            imageUrl = given.imageUrl,
+            id = given.id?:0
         )
         return created
     }
@@ -46,6 +47,7 @@ class DataModelConverters {
             fatInServing = given.fat,
             sugarInServing = given.sugar,
             caloriesInServing = given.calsPer,
+            id=given.id
         )
         return created
     }
@@ -66,9 +68,11 @@ class DataModelConverters {
             parentDay = LocalDateTime.ofEpochSecond(
                 given.dayOfWorkout,
                 0,
-                ZoneId.systemDefault().rules.getOffset(LocalDateTime.now())),
+                ZoneId.systemDefault().rules.getOffset(LocalDateTime.now())
+            ),
             setNumber = given.setNumber,
             weightUsed = given.weightUsed,
+            id = given.id?:0,
         )
         return toReturn
     }
@@ -87,7 +91,8 @@ class DataModelConverters {
             dayOfWorkout = given.parentDay.toEpochSecond(ZoneOffset.UTC),
             repetitions = given.repetitions,
             setNumber = given.setNumber,
-            weightUsed = given.weightUsed
+            weightUsed = given.weightUsed,
+            id = given.id
         )
     }
 

@@ -15,15 +15,13 @@ import com.example.gymappia.model.DailyMetrics
 import com.example.gymappia.model.Day
 import com.example.gymappia.model.Food
 import com.example.gymappia.model.Workout
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset
-import java.time.temporal.TemporalAdjuster
 import java.time.temporal.TemporalAdjusters
 
 
@@ -39,13 +37,17 @@ class WeekDayViewModel(
         weeklySetUp()
     }
 
-    var daySelected by mutableStateOf(Day(LocalDate.now()))
+//    var daySelected = MutableStateFlow(Day(LocalDate.now()))
+    //    var daySelected by mutableStateOf(Day(LocalDate.now()))
+
+    private val _daySelected = MutableStateFlow(Day(LocalDate.now()))
+    val daySelected = _daySelected.asStateFlow()
 
     private val _weekdays = mutableStateOf<List<Day>>(emptyList())
     val weekdays: List<Day>
         get() = _weekdays.value
 
-    fun refreshWeek(){
+    fun refreshWeek() {
         weeklySetUp()
     }
 
@@ -83,7 +85,7 @@ class WeekDayViewModel(
 
             }
             _weekdays.value = days
-            daySelected =  days.firstOrNull { it.date==daySelected.date }?:days.first()
+            _daySelected.value = days.firstOrNull { it.date == _daySelected.value.date } ?: days.first()
         }
 
     }
@@ -112,6 +114,71 @@ class WeekDayViewModel(
 
     }
 
+    fun deleteFood(toDelete: Food) {
+
+//        val daysCopy = _weekdays.value.toMutableList()
+//        val dayToChange = toDelete.dayTime.toLocalDate()
+//        val day = daysCopy.first({ it.date == dayToChange })
+//        val dayIndex = daysCopy.indexOf(day)
+//        val foods = day.foods.toMutableList()
+//        val foodIndex = foods.indexOf(foods.first({ it.id == toDelete.id }))
+//        foods.removeAt(foodIndex)
+//        val dayToReplaceWith = Day(
+//            date = dayToChange,
+//            foods = foods.toList(),
+//            workouts = day.workouts,
+//            progressInGoals = day.progressInGoals
+//        )
+//        daysCopy[dayIndex] = dayToReplaceWith
+//        _daySelected.value = dayToReplaceWith
+
+        val daysCopy = _weekdays.value.toMutableList()
+        val dayToChange = toDelete.dayTime.toLocalDate()
+        val day = daysCopy.first({ it.date == dayToChange })
+        val dayToReplaceWith = Day(
+            date = dayToChange,
+            foods = day.foods.filterNot { it.id == toDelete.id },
+            workouts = day.workouts,
+            progressInGoals = day.progressInGoals
+        )
+
+        val dayIndex = daysCopy.indexOf(day)
+
+        daysCopy[dayIndex] = dayToReplaceWith
+
+        _daySelected.value = dayToReplaceWith
+
+
+        viewModelScope.launch {
+            foodDao.deleteFoodById(toDelete.id)
+        }
+
+    }
+
+    fun deleteWorkout(toDelete: Workout){
+        val daysCopy = _weekdays.value.toMutableList()
+        val dayToChange = toDelete.parentDay.toLocalDate()
+        val day = daysCopy.first({ it.date == dayToChange })
+        val dayToReplaceWith = Day(
+            date = dayToChange,
+            foods = day.foods,
+            workouts = day.workouts.filterNot { it.id == toDelete.id },
+            progressInGoals = day.progressInGoals
+        )
+
+        val dayIndex = daysCopy.indexOf(day)
+
+        daysCopy[dayIndex] = dayToReplaceWith
+
+        _daySelected.value = dayToReplaceWith
+
+
+        viewModelScope.launch {
+            workoutDao.deleteWorkoutById(toDelete.id)
+        }
+
+    }
+
     fun getMetricsOfDay(
         day: LocalDate,
         foods: List<Food>,
@@ -122,24 +189,24 @@ class WeekDayViewModel(
         caloriesGoal: Int
     ): List<DailyMetrics> {
         var proteinProgress = foods.map { food -> food.protein }.sum() / proteinGoal
-        if (proteinProgress>1){
+        if (proteinProgress > 1) {
             proteinProgress = 1.0f
         }
         var carbProgress = foods.map { food -> food.carbs }.sum() / carbsGoal
-        if (carbProgress>1){
+        if (carbProgress > 1) {
             carbProgress = 1.0f
         }
         var sugarProgress = foods.map { food -> food.sugar }.sum() / sugarsGoal
-        if (sugarProgress>1){
+        if (sugarProgress > 1) {
             sugarProgress = 1.0f
         }
 
         var caloriesProgress = foods.map { food -> food.calsPer }.sum() / caloriesGoal
-        if (caloriesProgress>1){
+        if (caloriesProgress > 1) {
             caloriesProgress = 1.0f
         }
         var fatProgress = foods.map { food -> food.fat }.sum() / fatsGoal
-        if (fatProgress>1){
+        if (fatProgress > 1) {
             fatProgress = 1.0f
         }
 
@@ -172,5 +239,9 @@ class WeekDayViewModel(
 
 
             )
+    }
+
+    fun changeDaySelected(day:Day){
+        _daySelected.value  = day
     }
 }

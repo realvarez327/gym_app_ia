@@ -20,5 +20,7 @@ interface FoodDao {
     @Delete
     suspend fun deleteFood(foodToKill: FoodEntity)
 
+    @Query("DELETE FROM foods WHERE id=:givenID")
+    suspend fun deleteFoodById(givenID:Int)
 
 }

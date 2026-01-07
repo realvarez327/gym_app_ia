@@ -30,6 +30,7 @@ private const val CALORIES_KEY = "calories"
 
 private const val INITIALIZED_KEY = "initialized"
 
+private const val ASKED_USER_FOR_NOTIFS = "allowedNotifs"
 private const val TAG ="user_settings_repo"
 object UserSettingsRepository {
 
@@ -80,6 +81,20 @@ object UserSettingsRepository {
         }else{
             return false
         }
+    }
+
+    private val _askedUserForNotifs = MutableStateFlow(false)
+    val askedUserForName: StateFlow<Boolean> = _askedUserForNotifs
+
+    fun changeIfAskedForNotifs(newState:Boolean){
+        sharedPreferences.edit {
+            putBoolean(ASKED_USER_FOR_NOTIFS, newState)
+        }
+        _askedUserForNotifs.value = newState
+    }
+
+    fun getNotifsAllowedState():Boolean{
+        return sharedPreferences.getBoolean(ASKED_USER_FOR_NOTIFS, false)
     }
     private val _nameFlow = MutableStateFlow("Unknown")
     val nameFlow: StateFlow<String> = _nameFlow

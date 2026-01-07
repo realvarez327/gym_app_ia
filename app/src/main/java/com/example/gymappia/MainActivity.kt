@@ -14,15 +14,11 @@ import com.example.gymappia.ui.theme.GymAppIATheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        NotifHandler.registerLoggingChannelWithSystem(this)
-        val defaultHour = 8
-        val defaultMinute = 30
-        NotifScheduler.scheduleDailyNotif(this,defaultHour,defaultMinute)
+//        NotifHandler.registerLoggingChannelWithSystem(this)
+//        val defaultHour = 8
+//        val defaultMinute = 30
+//        NotifScheduler.scheduleDailyNotif(this,defaultHour,defaultMinute)
         UserSettingsRepository.init(this)
-//        if(UserSettingsRepository.hourFlow.value==-1) {
-//            UserSettingsRepository.putHour(newHour = defaultHour)
-//            UserSettingsRepository.putMinute(newMinute = defaultMinute)
-//        }
         enableEdgeToEdge()
         setContent {
             GymAppIATheme {

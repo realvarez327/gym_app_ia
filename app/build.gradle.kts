@@ -46,6 +46,8 @@ android {
 
 dependencies {
 
+
+    implementation("androidx.activity:activity-ktx:1.12.2")
     implementation(libs.coil3.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.play.services.mlkit.barcode.scanning)

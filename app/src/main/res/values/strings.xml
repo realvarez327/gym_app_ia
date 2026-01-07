@@ -17,6 +17,7 @@
     <string name="welcome_user_to_week">Welcome, %s!</string>
     <string name="food_view">Food</string>
     <string name="workout_view">Workouts</string>
+    <string name="stats_view">Metrics</string>
     <string name="add_food_search">Food Search</string>
     <string name="add_exercise_search">Exercise Search</string>
     <string name="add_food">Add food</string>
@@ -34,6 +35,9 @@
 
     <string name="exercise_graph_name">exercise_graph</string>
     <string name="food_graph_name">food_graph</string>
+
+    <string name="yesAnswer">Yes</string>
+    <string name="noAnswer">No</string>
 
 
 </resources>

@@ -6,6 +6,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class Food(
+    val id:Int,
     val foodName: String,
     val calsPer: Float,
     val protein: Float,

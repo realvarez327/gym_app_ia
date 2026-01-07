@@ -1,5 +1,7 @@
 package com.example.gymappia.data
 
+import androidx.annotation.StringRes
+import com.example.gymappia.R
 import com.example.gymappia.model.FitnessGoal
 import com.example.gymappia.model.Gender
 import com.example.gymappia.model.NumberQuestionSubject
@@ -38,9 +40,19 @@ object QuestionsDataSource {
             numberQuestionSubject = NumberQuestionSubject.Height
         ),
         Question.NumberResponseQuestion(
-            questionText = "And finally, how old are you?",
+            questionText = "How old are you?",
             numberQuestionSubject = NumberQuestionSubject.Age
+        ),
+        Question.SingleChooseQuestion(
+            questionText = "And finally, would you like notifications reminding you to log your data?",
+            possibleAnswerChoices = listOf(YesOrNoResponse.Yes, YesOrNoResponse.No),
+            singleChooseSubject = SingleChoiceQuestionSubject.Notifications
         )
     )
 
+}
+
+enum class YesOrNoResponse (@StringRes val stringID:Int){
+    Yes(stringID = R.string.yesAnswer),
+    No(stringID = R.string.noAnswer)
 }

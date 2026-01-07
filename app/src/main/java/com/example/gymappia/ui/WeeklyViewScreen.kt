@@ -52,7 +52,7 @@ fun WeeklyViewScreen(
             DayPreview(
                 modifier = modifier,
                 goToDay = { day ->
-                    dayToWeekVM.daySelected = day.copy()
+                    dayToWeekVM.changeDaySelected(day)
                     goToDay()
                 },
                 day = day,
