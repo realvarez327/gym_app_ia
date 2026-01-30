@@ -1,6 +1,8 @@
 package com.example.gymappia.model
 
+import androidx.activity.result.ActivityResult
 import androidx.lifecycle.ViewModel
+import com.example.gymappia.data.ActivityLevel
 import com.example.gymappia.data.UserSettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,28 +54,37 @@ class UserInitViewModel (): ViewModel() {
                     cals +=5
                 }
             }
-           if(goals!=null){
-               if(goals.contains(FitnessGoal.LosingWeight)&&!(goals.contains(FitnessGoal.GainingWeight)||goals.contains(
-                       FitnessGoal.KeepWeight))){
-                   // if goals has losing weight and no user mistakes (keeping or gaining also pressed)
-                   cals-=500
-               }else if(goals.contains(FitnessGoal.GainingWeight)&&!(goals.contains(FitnessGoal.LosingWeight)||goals.contains(
-                       FitnessGoal.KeepWeight))){
-                   //sources say 350-500
-                   cals+=400
-               }
-           }
+
             //assuming that weight is kg
+            cals*=state.activityLevel.calFactor
+            if(goals!=null){
+                if(goals.contains(FitnessGoal.LosingWeight)&&!(goals.contains(FitnessGoal.GainingWeight)||goals.contains(
+                        FitnessGoal.KeepWeight))){
+                    // if goals has losing weight and no user mistakes (keeping or gaining also pressed)
+                    cals-=500
+                }else if(goals.contains(FitnessGoal.GainingWeight)&&!(goals.contains(FitnessGoal.LosingWeight)||goals.contains(
+                        FitnessGoal.KeepWeight))){
+                    //sources say 350-500
+                    cals+=400
+                }
+            }
             UserSettingsRepository.putDailyCalories(cals.roundToInt())
             UserSettingsRepository.putProtein((state.userWeight!!*2.2f).roundToInt())
             UserSettingsRepository.putDailySugar(30)
-            //45 to 65 percent reccomended in cal form
-            UserSettingsRepository.putDailyCarbs((cals*0.5).roundToInt())
+            UserSettingsRepository.putDailyCarbs(((0.325*cals)/4).roundToInt())
             var fatToPut = 0.3*cals
             if(state.userAge!!<3){
                 fatToPut=0.35*cals
             }
             UserSettingsRepository.putDailyFat(fatToPut.roundToInt())
+        }
+    }
+
+    fun updateUserActivityLevel(newLevel: ActivityLevel){
+        _uiInitState.update { currentState->
+            currentState.copy(
+                activityLevel = newLevel
+            )
         }
     }
 

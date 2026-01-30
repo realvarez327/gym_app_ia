@@ -61,6 +61,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.util.TableInfo
+import com.example.gymappia.data.ActivityLevel
 import com.example.gymappia.data.QuestionsDataSource
 import com.example.gymappia.data.UserSettingsRepository
 import com.example.gymappia.data.YesOrNoResponse
@@ -247,7 +248,11 @@ fun SingleChoiceSection(
                     )
                 } else {
                     //denied
-                    Toast.makeText(context, "You will not receive notifications! \n You can change this in settings later", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        "You will not receive notifications! \n You can change this in settings later",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
 
@@ -322,6 +327,43 @@ fun SingleChoiceSection(
             }
         }
 
+        SingleChoiceQuestionSubject.ActivityLevel -> {
+            var selectedLevel: ActivityLevel by rememberSaveable { mutableStateOf(ActivityLevel.Sedentary) }
+            Column(
+                modifier = modifier.fillMaxSize().padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                QuestionTitle(question)
+                Text("Exercise is 15-30 minutes of elevated heart rate activity, \n intense exercise is 45-120 minutes of elevated heart rate activity, \n and very intense exercise is more than 2 hours of elevate heart rate activity.")
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = modifier.padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    //gender passed in is enum!
+                    items(items = question.possibleAnswerChoices) { choice ->
+                        if (choice is ActivityLevel) {
+                            Log.d("gender q", "choice I need to show is a Gender and it is $choice")
+                            SingleSelectChoiceBubble<ActivityLevel>(
+                                stringToShow = choice.mainName, onClick = {
+                                    selectedLevel = choice
+                                }, selectedOption = selectedLevel, myOption = choice
+                            )
+
+                        }
+                    }
+
+                }
+                NextButton(
+                    alsoOnclick = {
+                        viewModel.updateUserActivityLevel(selectedLevel)
+                        Log.d("gender q", "gender submitted: ${selectedLevel.name}")
+
+                    }, viewModel = viewModel
+                )
+            }
+        }
     }
 }
 
@@ -330,9 +372,7 @@ fun onNotifPermissionsGranted(context: Context, notifHour: Int, notifMinute: Int
     //context is not application
     NotifHandler.registerLoggingChannelWithSystem(context.applicationContext)
     NotifScheduler.scheduleDailyNotif(
-        context = context.applicationContext,
-        hour = notifHour,
-        minute = notifMinute
+        context = context.applicationContext, hour = notifHour, minute = notifMinute
     )
     Toast.makeText(context, "Notifications are now enabled", Toast.LENGTH_SHORT).show()
 }
@@ -418,20 +458,45 @@ fun <T> SingleSelectChoiceBubble(
 ) {
     val selected = (selectedOption == myOption)
 
-    Button(
-        shape = RoundedCornerShape(36.dp), modifier = modifier, onClick = {
-            onClick()
-        }, colors = ButtonDefaults.buttonColors(
-            containerColor = if (selected) {
-                colorScheme.inversePrimary
-            } else {
-                colorScheme.primary
+    if (myOption !is ActivityLevel) {
+        Button(
+            shape = RoundedCornerShape(36.dp), modifier = modifier, onClick = {
+                onClick()
+            }, colors = ButtonDefaults.buttonColors(
+                containerColor = if (selected) {
+                    colorScheme.inversePrimary
+                } else {
+                    colorScheme.primary
+                }
+            )
+        ) {
+            Text(
+                text = stringToShow
+            )
+        }
+    }else{
+        Button(
+            shape = RoundedCornerShape(36.dp), modifier = modifier, onClick = {
+                onClick()
+            }, colors = ButtonDefaults.buttonColors(
+                containerColor = if (selected) {
+                    colorScheme.inversePrimary
+                } else {
+                    colorScheme.primary
+                }
+            )
+        ) {
+            Column() {
+                Text(
+                    text = myOption.mainName,
+                    style = typography.labelMedium
+                )
+                Text(
+                    text = myOption.desc,
+                    style = typography.labelSmall
+                )
             }
-        )
-    ) {
-        Text(
-            text = stringToShow
-        )
+        }
     }
 }
 
@@ -521,7 +586,7 @@ fun MultipleChoiceScreen(
                                 //not found
                                 goals.add(currentItem)
                             }
-                        }, stringToShow = currentItem.name, initialSelected = false
+                        }, stringToShow = currentItem.message, initialSelected = false
                     )
                 }
             }

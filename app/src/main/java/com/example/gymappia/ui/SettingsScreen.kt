@@ -1,7 +1,6 @@
 package com.example.gymappia.ui
 
 
-import android.app.NotificationManager
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
@@ -58,7 +57,8 @@ import com.example.gymappia.ui.theme.GymAppIATheme
 enum class SettingOption(@StringRes val settingNameId: Int) {
     Preferences(settingNameId = R.string.preferences),
     Notifications(settingNameId = R.string.notifTimeControl),
-    Goals(settingNameId = R.string.goals)
+    Goals(settingNameId = R.string.goals),
+    CalculatedOptions(settingNameId = R.string.calculatedGoalsSettings)
 }
 
 
@@ -67,7 +67,8 @@ fun SettingsOverviewScreen(
     modifier: Modifier = Modifier,
     goToPreferences: () -> Unit,
     goToNotifications: () -> Unit,
-    goToGoals: () -> Unit
+    goToGoals: () -> Unit,
+    goToCalculatedGoals:()->Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -93,6 +94,11 @@ fun SettingsOverviewScreen(
             modifier = mod,
             goToClickedScreen = { goToPreferences() },
             settingID = SettingOption.Preferences.settingNameId
+        )
+        SettingOptionButton(
+            modifier = mod,
+            goToClickedScreen = { goToCalculatedGoals() },
+            settingID = SettingOption.CalculatedOptions.settingNameId
         )
 
 
@@ -254,6 +260,123 @@ fun GoalsManagingScreenPrev(modifier: Modifier = Modifier) {
         }) {
             Text("Apply Changes")
         }
+    }
+}
+
+
+@Composable
+fun CalculatedGoalsManagingScreen(modifier: Modifier = Modifier) {
+    val currCals by UserSettingsRepository.dailyCaloriesFlow.collectAsStateWithLifecycle()
+    val currCarbs by UserSettingsRepository.dailyCarbsFlow.collectAsStateWithLifecycle()
+    val currSugar by UserSettingsRepository.weightFlow.collectAsStateWithLifecycle()
+    val currFat by UserSettingsRepository.heightFlow.collectAsStateWithLifecycle()
+    val currProtein by UserSettingsRepository.dailyProteinFlow.collectAsStateWithLifecycle()
+
+    var localCals by rememberSaveable { mutableStateOf(currCals.toString()) }
+    var localCarbs by rememberSaveable { mutableStateOf(currCarbs.toString()) }
+    var localSugar by rememberSaveable { mutableStateOf(currSugar.toString()) }
+    var localFat by rememberSaveable { mutableStateOf(currFat.toString()) }
+    var localProtein by rememberSaveable { mutableStateOf(currProtein.toString()) }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+
+    ) {
+        Row {
+
+            Text("Calories (kcal) : ")
+            TextField(
+                value = localCals,
+                onValueChange = { localCals = it },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = colorScheme.primaryContainer,
+                    unfocusedContainerColor = colorScheme.secondaryContainer,
+                    disabledContainerColor = colorScheme.tertiaryContainer,
+                )
+            )
+        }
+        Row {
+            Text("Protein (g) :")
+            TextField(
+                value = localProtein,
+                onValueChange = { localProtein = it },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = colorScheme.primaryContainer,
+                    unfocusedContainerColor = colorScheme.secondaryContainer,
+                    disabledContainerColor = colorScheme.tertiaryContainer,
+                )
+            )
+        }
+
+        Row {
+            Text("Carbohydrates (g) :")
+            TextField(
+                value = localCarbs,
+                onValueChange = { localCarbs = it },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = colorScheme.primaryContainer,
+                    unfocusedContainerColor = colorScheme.secondaryContainer,
+                    disabledContainerColor = colorScheme.tertiaryContainer,
+                )
+            )
+        }
+
+        Row {
+            Text("Sugar (g) : ")
+            TextField(
+                value = localSugar,
+                onValueChange = { localSugar = it },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = colorScheme.primaryContainer,
+                    unfocusedContainerColor = colorScheme.secondaryContainer,
+                    disabledContainerColor = colorScheme.tertiaryContainer,
+                )
+            )
+        }
+        Row {
+            Text("Fat (g) : ")
+            TextField(
+                value = localFat,
+                onValueChange = { localFat = it },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = colorScheme.primaryContainer,
+                    unfocusedContainerColor = colorScheme.secondaryContainer,
+                    disabledContainerColor = colorScheme.tertiaryContainer,
+                )
+            )
+        }
+
+
+        Spacer(modifier = Modifier.size(10.dp))
+        Button(onClick = {
+            //submit
+            if (localCarbs.toInt() != currCarbs) {
+                UserSettingsRepository.putDailyCarbs(localCarbs.toIntOrNull() ?: 0)
+            }
+            if (localFat.toFloat() != currFat) {
+                UserSettingsRepository.putDailyFat(localFat.toIntOrNull() ?: 0)
+            }
+            if (localSugar.toFloat() != currSugar) {
+                UserSettingsRepository.putDailySugar(localSugar.toIntOrNull() ?: 0)
+            }
+            if (localProtein.toInt() != currProtein) {
+                UserSettingsRepository.putProtein(localProtein.toIntOrNull()?:0)
+            }
+            if (localCals.toInt() != currCals) {
+                UserSettingsRepository.putDailyCalories(localCals.toIntOrNull()?:0)
+            }
+        }) {
+            Text("Apply Changes")
+        }
+
     }
 }
 
@@ -548,7 +671,8 @@ fun SettingOverviewScreenPreview() {
             modifier = Modifier,
             goToPreferences = { },
             goToNotifications = { },
-            goToGoals = {}
+            goToGoals = {},
+            goToCalculatedGoals = {}
         )
     }
 }

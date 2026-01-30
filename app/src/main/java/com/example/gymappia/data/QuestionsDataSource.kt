@@ -44,11 +44,27 @@ object QuestionsDataSource {
             numberQuestionSubject = NumberQuestionSubject.Age
         ),
         Question.SingleChooseQuestion(
+            questionText = "What is your activity level?",
+            singleChooseSubject = SingleChoiceQuestionSubject.ActivityLevel,
+            possibleAnswerChoices = ActivityLevel.entries.toList()
+
+        ),
+        Question.SingleChooseQuestion(
             questionText = "And finally, would you like notifications reminding you to log your data?",
             possibleAnswerChoices = listOf(YesOrNoResponse.Yes, YesOrNoResponse.No),
             singleChooseSubject = SingleChoiceQuestionSubject.Notifications
         )
     )
+
+}
+
+enum class ActivityLevel(val calFactor:Float, val mainName:String, val desc:String){
+    Sedentary(calFactor = 1.2f, mainName = "Sedentary", desc = "Little to no exercise, desk job"),
+    LightlyActive(calFactor = 1.375f, mainName = "Lightly Active", desc = "Exercise 1-3 times per week"),
+    ModeratelyActive(calFactor = 1.55f, mainName = "Moderately Active", desc = "Exercise 4-5 times per week"),
+    VeryActive(calFactor = 1.725f, mainName = "Very Active", desc = "Intense exercise 6-7 times per week"),
+    ExtremelyActive(calFactor = 1.9f, mainName = "Extremely Active", desc = "Very intense exercise daily, or physical job")
+
 
 }
 

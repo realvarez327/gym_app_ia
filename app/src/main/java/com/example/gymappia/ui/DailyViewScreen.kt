@@ -4,7 +4,6 @@ package com.example.gymappia.ui
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Add
@@ -36,19 +37,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gymappia.R
 import com.example.gymappia.data.UserSettingsRepository
-import com.example.gymappia.data.roomClasses.HealthDatabase
 import com.example.gymappia.data.roomClasses.MealType
 import com.example.gymappia.model.Day
 import com.example.gymappia.model.Food
-import com.example.gymappia.model.WeekDayViewModelFactory
 import com.example.gymappia.model.Workout
 import java.time.LocalDate
 import androidx.compose.runtime.collectAsState
@@ -91,7 +88,8 @@ fun DailyViewScreen(
                         onClick = { selectedDestination = screen },
                         text = {
                             Text(
-                                text = stringResource(screen.stringID)
+                                text = stringResource(screen.stringID),
+                                style = MaterialTheme.typography.titleSmall
                             )
                         }
                     )
@@ -116,6 +114,7 @@ fun DailyViewScreen(
                         currentDay = selectedDay
                     )
                 }
+
                 DayOverviewScreens.StatsView -> {
                     StatsViewScreen(
                         modifier = modifier,
@@ -147,13 +146,15 @@ fun AddItemButton(
                 contentDescription = "add" + when (startingTab) {
                     DayOverviewScreens.FoodView -> " food"
                     DayOverviewScreens.WorkoutView -> " workout"
-                    else -> {throw Error("Add item button somehow called in stats screen")}
+                    else -> {
+                        throw Error("Add item button somehow called in stats screen")
+                    }
                 }
             )
         }
     }
 }
-
+//todo add truncating food bubble name if too long to show delete button
 @Composable
 fun FoodViewScreen(
     modifier: Modifier = Modifier,
@@ -168,86 +169,61 @@ fun FoodViewScreen(
     val dinnerEntities = foods.filter { food -> food.mealType == MealType.Dinner }
     val snackEntities = foods.filter { food -> food.mealType == MealType.Snack }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row {
-            Column {
-                Text(
-                    text = "Breakfast",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                MealFoodsList(
-                    mealList = breakfastEntities,
-                    toDeleteFood = { food: Food -> DWVM.deleteFood(food) }
-                )
-
-            }
-        }
-
-
-        Row {
-            Column {
-                Text(
-                    text = "Lunch",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                MealFoodsList(
-                    mealList = lunchEntities,
-                    toDeleteFood = { food: Food -> DWVM.deleteFood(food) }
-                )
-
-            }
-        }
-        Row {
-            Column {
-                Text(
-                    text = "Snacks",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                MealFoodsList(
-                    mealList = snackEntities,
-                    toDeleteFood = { food: Food -> DWVM.deleteFood(food) }
-                )
-
-            }
-        }
-        Row {
-            Column {
-                Text(
-                    text = "Dinner",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                MealFoodsList(
-                    mealList = dinnerEntities,
-                    toDeleteFood = { food: Food -> DWVM.deleteFood(food) }
-                )
-
-            }
-        }
-
+    Scaffold(floatingActionButton = {
         AddItemButton(
             startingTab = DayOverviewScreens.FoodView,
-            goToAddScreen = { addFoodFunction() }
-        )
+            goToAddScreen = { addFoodFunction() })
+    }) {paddingValues ->
+        LazyColumn(
+            modifier = modifier.fillMaxSize().padding(paddingValues).padding(8.dp)
+        ) {
+            item {
+                Text(
+                    text = "Breakfast",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+            items(breakfastEntities){food->
+                FoodBubble(food = food, onClick = {}, toDeleteFood = { food: Food -> DWVM.deleteFood(food) } )
+            }
+
+            item {
+                Text(
+                    text = "Lunch",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+            items(lunchEntities){food->
+                FoodBubble(food = food, onClick = {}, toDeleteFood = { food: Food -> DWVM.deleteFood(food) } )
+            }
+
+            item {
+                Text(
+                    text = "Snacks",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+            items(snackEntities){food->
+                FoodBubble(food = food, onClick = {}, toDeleteFood = { food: Food -> DWVM.deleteFood(food) } )
+            }
+
+            item {
+                Text(
+                    text = "Dinner",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+            items(dinnerEntities){food->
+                FoodBubble(food = food, onClick = {}, toDeleteFood = { food: Food -> DWVM.deleteFood(food) } )
+            }
 
 
-    }
-
-}
-
-@Composable
-fun MealFoodsList(mealList: List<Food>, toDeleteFood: (Food) -> Unit) {
-    LazyColumn {
-        items(mealList) { item ->
-            FoodBubble(food = item, onClick = {}, toDeleteFood = toDeleteFood)//todo add routing
         }
     }
+
 }
 
+//todo add routing from bubbles to focus screens for updating
 @Composable
 fun FoodBubble(
     modifier: Modifier = Modifier,
@@ -322,39 +298,36 @@ fun WorkoutBubble(
 
 
 @Composable
-fun WorkoutsList(workoutsList: List<Workout>, deleteWorkout: (Workout) -> Unit) {
-    LazyColumn {
-        items(workoutsList) { item ->
-            WorkoutBubble(workout = item, toDeleteWorkout = deleteWorkout)
-        }
-    }
-}
-
-@Composable
 fun WorkoutViewScreen(
     modifier: Modifier = Modifier,
     DWVM: WeekDayViewModel,
     goToAddWorkout: () -> Unit,
     currentDay: Day
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "workouts")//todo add set organization
-        val workoutsList = currentDay.workouts
-        WorkoutsList(
-            workoutsList = workoutsList,
-            deleteWorkout = { workout -> DWVM.deleteWorkout(workout) },
-        )
-        Spacer(modifier = modifier.weight(1f))
-        AddItemButton(
-            modifier = modifier,
-            startingTab = DayOverviewScreens.WorkoutView,
-            goToAddScreen = { goToAddWorkout() }
-        )
+//todo add organizing by sets
+    Scaffold(
+        floatingActionButton = {
+            AddItemButton(
+                modifier = modifier,
+                startingTab = DayOverviewScreens.WorkoutView,
+                goToAddScreen = { goToAddWorkout() })
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item { Text(text = "Workouts:") }
+            items(currentDay.workouts) { workout ->
+                WorkoutBubble(
+                    workout = workout,
+                    toDeleteWorkout = { workout -> DWVM.deleteWorkout(workout) })
+
+            }
+        }
     }
 
 }
@@ -388,29 +361,30 @@ fun StatsViewScreen(
         ) {
             val rowModifier =
                 Modifier.background(color = MaterialTheme.colorScheme.primaryContainer)
+            val cellModifier = Modifier.weight(1f)
             Row(rowModifier) {
                 TableCell(modifier = Modifier.weight(1f)) { Text(text = "Metric Name") }
                 TableCell(modifier = Modifier.weight(1f)) { Text(text = "Progress") }
             }
             Row(rowModifier) {
-                TableCell() { Text(text = "Calories: ") }
-                TableCell() { Text(text = "$cals / ${UserSettingsRepository.dailyCaloriesFlow.collectAsState().value} calories") }
+                TableCell(cellModifier) { Text(text = "Calories: ") }
+                TableCell(cellModifier) { Text(text = "$cals / ${UserSettingsRepository.dailyCaloriesFlow.collectAsState().value} calories") }
             }
             Row(rowModifier) {
-                TableCell() { Text(text = "Fat: ") }
-                TableCell() { Text(text = "$fat / ${UserSettingsRepository.dailyFatFlow.collectAsState().value} grams") }
+                TableCell(cellModifier) { Text(text = "Fat: ") }
+                TableCell(cellModifier) { Text(text = "$fat / ${UserSettingsRepository.dailyFatFlow.collectAsState().value} grams") }
             }
             Row(rowModifier) {
-                TableCell() { Text(text = "Protein: ") }
-                TableCell() { Text(text = "$protein / ${UserSettingsRepository.dailyProteinFlow.collectAsState().value} grams") }
+                TableCell(cellModifier) { Text(text = "Protein: ") }
+                TableCell(cellModifier) { Text(text = "$protein / ${UserSettingsRepository.dailyProteinFlow.collectAsState().value} grams") }
             }
             Row(rowModifier) {
-                TableCell() { Text(text = "Carbohydrates: ") }
-                TableCell() { Text(text = "$carbs / ${UserSettingsRepository.dailyCarbsFlow.collectAsState().value} grams") }
+                TableCell(cellModifier) { Text(text = "Carbohydrates: ") }
+                TableCell(cellModifier) { Text(text = "$carbs / ${UserSettingsRepository.dailyCarbsFlow.collectAsState().value} grams") }
             }
             Row(rowModifier) {
-                TableCell() { Text(text = "Sugar: ") }
-                TableCell() { Text(text = "$sugar / ${UserSettingsRepository.dailySugarFlow.collectAsState().value} grams") }
+                TableCell(cellModifier) { Text(text = "Sugar: ") }
+                TableCell(cellModifier) { Text(text = "$sugar / ${UserSettingsRepository.dailySugarFlow.collectAsState().value} grams") }
             }
         }
     }
@@ -491,6 +465,6 @@ fun StatsViewScreenPrev(
 
 @Preview(showBackground = true)
 @Composable
-fun statsScreenPreview() {
+fun StatsScreenPreview() {
     StatsViewScreenPrev()
 }

@@ -13,7 +13,7 @@
     <string name= "centimeters">centimeters</string>
     <string name="years_old">years old</string>
     <string name="basic_greeting">Hey! Ready to train?</string>
-    <string name="error_msg_unexpected">Error: Something that\'s not supposed to be able to happen jus occurred. Please fix me!</string>
+    <string name="error_msg_unexpected">Error: Something that\'s not supposed to be able to happen just occurred. Please fix me!</string>
     <string name="welcome_user_to_week">Welcome, %s!</string>
     <string name="food_view">Food</string>
     <string name="workout_view">Workouts</string>
@@ -30,6 +30,7 @@
     <string name="preferences">User Preferences</string>
     <string name="goals">User-set goals</string>
     <string name="notifTimeControl">Notifications</string>
+    <string name="calculatedGoalsSettings">Calculated Goals</string>
 
     <string name="name_not_found">Name Not Found, error occurred</string>
 

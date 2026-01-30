@@ -45,6 +45,7 @@ import com.example.gymappia.ui.DailyViewScreen
 import com.example.gymappia.ui.SettingsOverviewScreen
 import com.example.gymappia.model.UserInitViewModel
 import com.example.gymappia.model.WeekDayViewModelFactory
+import com.example.gymappia.ui.CalculatedGoalsManagingScreen
 import com.example.gymappia.ui.FoodFocusScreen
 import com.example.gymappia.ui.GoalsManagingScreen
 import com.example.gymappia.ui.LoadingScreen
@@ -65,7 +66,7 @@ enum class AppScreen(@StringRes val id: Int) {
     AddFoodFocus(id = R.string.add_food), AddExerciseFocus(id = R.string.add_exercise), Preferences(
         id = R.string.preferences
     ),
-    Notifications(id = R.string.notifTimeControl), Goals(id = R.string.goals)
+    Notifications(id = R.string.notifTimeControl), Goals(id = R.string.goals), CalculatedGoals(id = R.string.calculatedGoalsSettings)
 
 }
 
@@ -280,12 +281,16 @@ fun GymApp() {
                             goToPreferences = { navController.navigate(AppScreen.Preferences.name) },
                             goToNotifications = { navController.navigate(AppScreen.Notifications.name) },
                             goToGoals = { navController.navigate(AppScreen.Goals.name) },
+                            goToCalculatedGoals = {navController.navigate(AppScreen.CalculatedGoals.name)}
                         )
 
                     }
 
                     composable(route = AppScreen.Preferences.name) {
                         PreferencesManagingScreen()
+                    }
+                    composable (route = AppScreen.CalculatedGoals.name){
+                        CalculatedGoalsManagingScreen()
                     }
 
                     composable(route = AppScreen.Notifications.name) {

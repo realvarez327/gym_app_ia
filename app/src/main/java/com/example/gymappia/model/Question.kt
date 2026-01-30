@@ -9,7 +9,7 @@ enum class NumberQuestionSubject{
 }
 
 enum class SingleChoiceQuestionSubject{
-    Gender, Notifications
+    Gender, Notifications,ActivityLevel
 }
 sealed class Question(
     open val questionText: String,
